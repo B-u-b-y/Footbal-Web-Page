@@ -1,0 +1,54 @@
+/*colors: ##DEEFB7, ##108C00, ##414288, ##682D63, ##BB0A21*/
+
+body {
+  margin: 0;
+  font-family: 'Georgia', sans-serif;
+  background-color: white;
+  font-size: 20px;
+}
+
+.topnav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: lightgreen;
+  margin: 2px;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.topnav a {
+  color: #04080F;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 17px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.topnav a:hover {
+  text-decoration: underline black;
+}
+
+.topnav #logo {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 30px;
+  color: #04080F;
+  text-decoration: none;
+}
+.topnav #login {
+  float: right;
+}
+
+.space {
+  height: 50px; /* This will create a 50px space */
+}
+
+.initial {
+  color: #04080F;
+  display: block;
+  text-align: center;
+}
