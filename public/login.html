@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/stylesheets/login.css">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="/javascripts/login.js"></script>
+    <title>Login</title>
+</head>
+<body>
+<div class="wrapper">
+    <form id="loginForm">
+        <h2>Login</h2>
+        <div class="input-group">
+            <input id="username" type="text" placeholder="Username" name="username" required>
+            <i class='bx bx-user-circle'></i>
+        </div>
+        <div class="input-group">
+            <input id="password" type="password" placeholder="Password" name="password" required>
+            <i class='bx bx-lock' ></i>
+        </div>
+        <button type="submit" class="btn" id="login-btn">Login</button>
+        <div class="error-message" style="display: none; color: red; text-align: center"></div>
+
+        <div class="register-link" id="register-link">
+            <p>Don't have an account? <a href="#" id="register_link_click">Register</a></p>
+        </div>
+    </form>
+</div>
+</body>
+</html>
