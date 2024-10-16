@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+
     const form = document.querySelector('form');
     const loginBtn = document.getElementById('login-btn');
 
@@ -10,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const password = document.querySelector('input[name="password"]').value;
 
         if (loginBtn.textContent === 'Login') {
+
             // Send login request to the Spring Boot backend
             const response = await axios.post('http://localhost:8081/login', {
                 username: username,
@@ -17,7 +19,9 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (response.data.success) {
-                // If login is successful, redirect to another page or perform desired action
+
+                sessionStorage.setItem('username', username);
+                console.log('username login: ', username);
                 window.location.href = '/index.html';
             } else {
                 const error = document.querySelector('.error-message');
@@ -33,7 +37,10 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (response.data.success) {
-                // If registration is successful, show a message or redirect to login page
+
+                sessionStorage.setItem('username', username);
+                console.log('username registration: ', username);
+
                 window.location.href = '/index.html'; // or redirect to login page
             } else {
                 const error = document.querySelector('.error-message');

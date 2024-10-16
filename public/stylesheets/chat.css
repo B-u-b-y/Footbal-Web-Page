@@ -1,0 +1,238 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+}
+
+.wrapper {
+    width: 420px;
+    color: white;
+    background: #108C00;
+    border-radius: 10px;
+    padding: 30px 40px;
+    margin-bottom: 20px;
+    caret-color: transparent;
+}
+
+.wrapper h2 {
+    font-size: 36px;
+    text-align: center;
+    color: white;
+}
+
+.wrapper .rooms {
+    position: relative;
+    width: 100%;
+    height: 50px;
+    margin: 30px 0;
+}
+
+.rooms input {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    outline: none;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 40px;
+    font-size: 18px;
+    color: white;
+    padding: 20px 45px 20px 20px;
+}
+
+.rooms input::placeholder {
+    color: white;
+}
+
+.wrapper .btn {
+    width: 100%;
+    height: 45px;
+    background: white;
+    border: none;
+    outline: none;
+    border-radius: 40px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.chat-space {
+    height: 90vh;
+    width: 50%;
+    background: #10516F;
+    border-radius: 10px;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-sizing: border-box;
+    overflow: hidden; /* Prevents overflow */
+    caret-color: transparent;
+}
+
+
+/* Chat header styling */
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 5px;
+}
+
+.chat-header h2 {
+    font-size: 24px;
+    color: white;
+}
+
+.chat-header .btn {
+    background: #ff4d4d;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    cursor: pointer;
+    font-size: 14px;
+    border: none;
+}
+
+.chat-header .btn:hover {
+    background: #ff1a1a;
+}
+
+/* Adjusting chat-container for proper containment */
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 97%;
+    flex-grow: 1;
+    width: 100%; /* Ensures it doesn't exceed chat-space's width */
+    padding: 10px 0px;
+    box-sizing: border-box;
+    overflow: hidden; /* Ensure it stays within chat-space */
+}
+
+.chat-messages {
+    background-image: url("../images/7979_rid.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 20px;
+    height: 80vh;
+    flex-grow: 1; /* Takes remaining space above input */
+    overflow-y: auto;
+    padding: 20px 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column; /* Ensure messages stack vertically */
+    pointer-events: none;
+    cursor: none;
+}
+
+/* Chat input section */
+.chat-input {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    caret-color: transparent;
+}
+
+.chat-input input {
+    flex: 1; /* Adjusts based on available width */
+    height: 45px;
+    border: none;
+    border-radius: 30px;
+    padding: 0 15px;
+    font-size: 16px;
+    outline: none;
+    background: white;
+    color: #333;
+}
+
+.chat-input .send-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin-left: 10px;
+    border: none;
+}
+
+.chat-input .send-btn i {
+    color: white;
+    font-size: 18px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#message {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Change this to flex-start to align messages to the left */
+    pointer-events: none;
+}
+
+/* Style for messages */
+.chat-messages ul {
+    font-family: "Poppins", sans-serif;
+    list-style-type: none;
+    pointer-events: none;
+}
+
+.you {
+    font-weight: bold; /* Makes "You" bold */
+}
+
+.username {
+    font-weight: bold; /* Makes other usernames bold */
+}
+
+.my-message {
+    background-color: #d1ffd1; /* Light green background for user's messages */
+    color: black;
+    padding: 10px;
+    width: 45%; /* Set width to 50% */
+    align-self: flex-end; /* Align user's messages to the right */
+    text-align: right; /* Align user's messages to the right */
+    margin: 5px 0 5px auto;
+    border-radius: 10px 20px 0px 20px;
+    pointer-events: none;
+}
+
+.other-message {
+    background-color: #f1f1f1; /* Light gray background for other users' messages */
+    color: black;
+    padding: 10px;
+    border-radius: 20px 10px 20px 0px;
+    width: 45%; /* Set width to 50% */
+    align-self: flex-start; /* Align other users' messages to the left */
+    text-align: left; /* Align other users' messages to the left */
+    margin: 5px auto 5px 0;
+    pointer-events: none;
+}
+
+.system-message {
+    list-style-type: none;
+    background-color: lightgrey; /* Light gray background for system messages */
+    color: black;
+    width: 50%;
+    margin: 5px auto;
+    text-align: center;
+    font-style: italic;
+    padding: 10px;
+    border-radius: 10px;
+    pointer-events: none;
+}

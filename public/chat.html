@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <link rel="stylesheet" href="stylesheets/chat.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" rel="stylesheet">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/javascripts/chat.js"></script>
+</head>
+<body onload="init()">
+    <div class="wrapper">
+            <h2>Chat Room</h2>
+
+            <div class="rooms">
+                <input id="room" type="text" placeholder="Room" required>
+            </div>
+
+            <button type="submit" class="btn" id="connect-btn">Enter</button>
+    </div>
+
+    <div class="chat-space" style="display: none">
+        <div class="chat-header">
+            <h2>Chat</h2>
+            <button class="btn" id="leave-btn">Leave</button>
+        </div>
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <ul id="message"></ul>
+            </div>
+
+            <div class="chat-input">
+                <input type="text" id="message-input" placeholder="Type your message...">
+                <button class="btn send-btn" id="send-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
