@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/stylesheets/index.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <script src="/javascripts/index.js"></script>
     <title>El futbalito</title>
 </head>
@@ -16,7 +17,39 @@
     <span id="user-name" style="display: none;"></span>
 </div>
 
-<div class="space"></div>
+<div class="inline-container">
+    <div class="inline-item">
+        <select id="country-select">
+            <option value="">Select Country</option>
+            <option value="Italy"></option>
+            <option value="country2">Country 2</option>
+            <option value="country3">Country 3</option>
+        </select>
+    </div>
 
+    <div class="inline-item">
+        <select id="competition-select">
+            <option value="">Select Competition</option>
+        </select>
+    </div>
+
+    <div class="inline-item">
+        <select id="club-select">
+            <option value="">Select Club</option>
+            <option value="club1">Club 1</option>
+            <option value="club2">Club 2</option>
+            <option value="club3">Club 3</option>
+        </select>
+    </div>
+
+    <div class="inline-item">
+        <select id="player-select">
+            <option value="">Select Player</option>
+            <option value="player1">Player 1</option>
+            <option value="player2">Player 2</option>
+            <option value="player3">Player 3</option>
+        </select>
+    </div>
+</div>
 </body>
 </html>

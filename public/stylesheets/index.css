@@ -11,13 +11,14 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: lightgreen;
+  background-color: #119DA4;
   margin: 2px;
   padding: 10px;
   border-radius: 10px;
 }
 
-.topnav a, .topnav span {
+.topnav a,
+.topnav span {
   color: #04080F;
   text-align: center;
   padding: 14px 16px;
@@ -39,12 +40,9 @@ body {
   color: #04080F;
   text-decoration: none;
 }
+
 .topnav #login {
   float: right;
-}
-
-.space {
-  height: 50px; /* This will create a 50px space */
 }
 
 .initial {
@@ -53,6 +51,27 @@ body {
   text-align: center;
 }
 
-.active{
+.active {
   display: none;
 }
+
+.inline-container {
+  display: flex; /* Use flexbox to arrange the items in a row */
+  justify-content: space-between; /* Space them evenly */
+  margin: 20px 20px; /* Add some margin for spacing */
+}
+
+.inline-item {
+  flex: 1; /* Make each item take equal space */
+  margin: 0 10px; /* Add margin between items */
+  caret-color: transparent;
+}
+
+.inline-item select {
+  width: 100%; /* Make the select element take the full width of the container */
+  padding: 10px; /* Add padding for a bigger appearance */
+  border: 1px solid #ccc; /* Add a border for visual separation */
+  border-radius: 5px; /* Rounded corners */
+  background-color: #f9f9f9; /* Light background */
+}
+
