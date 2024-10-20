@@ -15,7 +15,6 @@ function checkLoginStatus() {
         login.style.display = 'none';
         userNameDisplay.textContent = `${username}`;
         userNameDisplay.style.display = 'inline';
-        console.log('username index: ', username);
     }
 }
 
@@ -33,6 +32,7 @@ function initializeSelects() {
     const competitionSelect = document.getElementById('competition-select');
     const clubSelect = document.getElementById('club-select');
     const playerSelect = document.getElementById('player-select');
+    const newsSelect = document.getElementById('news-container');
 
     let countriesLoaded = false; // Track if countries are loaded
     let competitionsLoaded = false; // Track if competitions are loaded
@@ -48,9 +48,7 @@ function initializeSelects() {
     countrySelect.addEventListener('click', async function () {
         if (!countriesLoaded) { // Only load once
             try {
-                console.log('Fetching countries...');
                 const response = await axios.get(`/server8090/competitions/country`);
-                console.log('Countries:', response.data);
                 displayOptions(countrySelect, response.data); // Display fetched options
                 countriesLoaded = true; // Set flag to true
             } catch (error) {
@@ -61,9 +59,17 @@ function initializeSelects() {
     });
 
     // Event handler for country select (on change)
+    // Event handler for country select (on change)
     countrySelect.addEventListener('change', async function () {
         const selectedCountry = this.value; // Get the selected country
-        console.log('Selected country:', selectedCountry);
+
+        // Hide the news-container when a country is selected
+        const newsContainer = document.querySelector('.news-container');
+        if (selectedCountry) {
+            newsContainer.style.display = 'none'; // Hide the news container
+        } else {
+            newsContainer.style.display = 'block'; // Show the news container if no country is selected
+        }
 
         // Clear dependent selects when country changes
         competitionSelect.innerHTML = '<option value="">Select Competition</option>';
@@ -82,7 +88,8 @@ function initializeSelects() {
         cardContainer.innerHTML = ''; // Clear existing cards
 
         // Fetch competitions for the selected country
-        await fetchCompetitions(selectedCountry); // Pass the selected country
+        if(selectedCountry !== '')
+            await fetchCompetitions(selectedCountry); // Pass the selected country
     });
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,10 +98,8 @@ function initializeSelects() {
     competitionSelect.addEventListener('click', async function () {
         if (!competitionsLoaded && countrySelect.value) { // Only load if the country is selected and competitions haven't been loaded yet
             const selectedCountry = countrySelect.value; // Get the selected country
-            console.log('Fetching competitions for country:', selectedCountry);
             try {
                 const response = await axios.get(`/server8090/${selectedCountry}/competitions`); // Fetch competitions based on selected country
-                console.log('Competitions:', response.data);
                 displayOptions(competitionSelect, response.data, 'competition_id', 'name'); // Display fetched options
                 competitionsLoaded = true; // Set flag to true to prevent repeated loading
             } catch (error) {
@@ -107,7 +112,6 @@ function initializeSelects() {
     // Event handler for competition select (on change)
     competitionSelect.addEventListener('change', async function () {
         const selectedCompetition = this.value; // Get the selected competition
-        console.log('Selected competition:', selectedCompetition);
 
         // Clear club select and player select
         clubSelect.innerHTML = '<option value="">Select Club</option>';
@@ -127,10 +131,8 @@ function initializeSelects() {
     clubSelect.addEventListener('click', async function () {
         if (!clubsLoaded && competitionSelect.value) { // Only load if the competition is selected and clubs haven't been loaded yet
             const selectedCompetition = competitionSelect.value; // Get the selected competition
-            console.log('Fetching clubs for competition:', selectedCompetition);
             try {
                 const response = await axios.get(`/server8090/${selectedCompetition}/clubs`); // Fetch clubs based on selected competition
-                console.log('Clubs:', response.data);
                 displayOptions(clubSelect, response.data, 'club_id', 'name'); // Display fetched options
                 clubsLoaded = true; // Set flag to true to prevent repeated loading
             } catch (error) {
@@ -143,7 +145,6 @@ function initializeSelects() {
     // Event handler for club select (on change)
     clubSelect.addEventListener('change', async function () {
         const selectedClub = this.value; // Get the selected club
-        console.log('Selected club:', selectedClub);
 
         // Clear existing cards for players and reset player select
         playerSelect.innerHTML = '<option value="">Select Player</option>'; // Reset player select
@@ -161,10 +162,8 @@ function initializeSelects() {
     playerSelect.addEventListener('click', async function () {
         if (!playersLoaded && clubSelect.value) { // Only load if the club is selected and players haven't been loaded yet
             const selectedClub = clubSelect.value; // Get the selected club
-            console.log('Fetching players for club:', selectedClub);
             try {
                 const response = await axios.get(`/server8090/${selectedClub}/players`); // Fetch players based on selected club
-                console.log('Players:', response.data);
                 displayOptions(playerSelect, response.data, 'player_id', 'name'); // Display fetched options
                 playersLoaded = true; // Set flag to true to prevent repeated loading
             } catch (error) {
@@ -175,9 +174,8 @@ function initializeSelects() {
     });
 
     // Event handler for player select (on change)
-    playerSelect.addEventListener('change', function () {
-        const selectedPlayer = this.value; // Get the selected player
-        console.log('Selected player:', selectedPlayer);
+    playerSelect.addEventListener('change', async function () {
+        const selectedPlayer = this.value; // Get the selected player ID
 
         // Clear existing cards in card-container
         const cardContainer = document.getElementById('card-container');
@@ -185,9 +183,10 @@ function initializeSelects() {
 
         // Fetch and display the selected player as a card
         if (selectedPlayer) {
-            fetchPlayer(selectedPlayer); // Pass the selected player
+            await fetchPlayer(selectedPlayer); // Pass the selected player ID
         }
     });
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -195,7 +194,6 @@ function initializeSelects() {
     async function fetchCompetitions(country) {
         try {
             const response = await axios.get(`/server8090/${country}/competitions`); // Use country parameter
-            console.log('Competitions:', response.data);
             displayCompetitionsAsCards(response.data); // Display competitions in cards
         } catch (error) {
             console.error('Error fetching competitions:', error);
@@ -207,7 +205,6 @@ function initializeSelects() {
     async function fetchClubs(competition) {
         try {
             const response = await axios.get(`/server8090/${competition}/clubs`); // Adjust this endpoint as needed
-            console.log('Clubs:', response.data);
             displayClubsAsCards(response.data); // Display clubs in cards
         } catch (error) {
             console.error('Error fetching clubs:', error);
@@ -219,7 +216,6 @@ function initializeSelects() {
     async function fetchPlayers(club) {
         try {
             const response = await axios.get(`/server8090/${club}/players`); // Adjust this endpoint as needed
-            console.log('Players:', response.data);
             displayPlayersAsCards(response.data); // Display the first player as a card
             playerSelect.disabled = false; // Enable player select
         } catch (error) {
@@ -231,8 +227,7 @@ function initializeSelects() {
     // Fetch player details based on selected player ID
     async function fetchPlayer(playerId) {
         try {
-            const response = await axios.get(`/server8090/player/${playerId}`); // Adjust this endpoint to fetch player details
-            console.log('Player Details:', response.data);
+            const response = await axios.get(`/server8090/players/${playerId}`); // Adjust this endpoint to fetch player details
             displayPlayerAsCard(response.data); // Call function to display player as card
         } catch (error) {
             console.error('Error fetching player details:', error);
@@ -313,10 +308,47 @@ function displayPlayersAsCards(players) {
 }
 
 
+// Function to display player details as a card
+function displayPlayerAsCard(player) {
+    const cardContainer = document.getElementById('card-container');
+    cardContainer.innerHTML = ''; // Clear existing cards
+
+    const card = document.createElement('div');
+    card.classList.add('player-card-container'); // Use the new class for styling
+
+    // Create card content
+    card.innerHTML = `
+        <img src="${player.image_url || '../images/default.png'}" alt="${player.name}" class="player-image">
+        <div class="player-info">
+            <div class="player-header">
+                <h4>${player.name}</h4>
+                <p class="dob">Date of birth: <strong>${player.date_of_birth}</strong></p>
+            </div>
+            <p class="age">Age: <strong>${player.age}</strong></p>
+            <p>Position: <strong>${player.position}</strong></p>
+            <p>Citizenship: <strong>${player.country_of_citizenship}</strong></p>
+            <p>Height: <strong>${player.height_in_cm}</strong></p>
+            <p>Preferred foot: <strong>${player.foot}</strong></p>
+            <p>Current club: <strong>${player.current_club_name}</strong></p>
+            <p>Market value: <strong>${player.market_value_in_eur}</strong></p>
+        </div>
+    `;
+
+    cardContainer.appendChild(card); // Append the card to the container
+}
+
+
+
 // Function to display options in a select element
 function displayOptions(selectElement, options, valueKey, textKey) {
     selectElement.innerHTML = ''; // Clear existing options
-    console.log('Options:', options);
+
+
+    // Add the default "Select" option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = `Select ${selectElement.id.replace('-select', '')}`;
+    selectElement.appendChild(defaultOption); // Add it before appending dynamic options
 
     options.forEach(option => {
         const optionElement = document.createElement('option');
