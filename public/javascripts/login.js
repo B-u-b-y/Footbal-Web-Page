@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (loginBtn.textContent === 'Login') {
 
             // Send login request to the Spring Boot backend
-            const response = await axios.post('http://localhost:8081/login', {
+            const response = await axios.post('http://localhost:8090/login', {
                 username: username,
                 password: password
             });
@@ -21,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (response.data.success) {
 
                 sessionStorage.setItem('username', username);
-                console.log('username login: ', username);
                 window.location.href = '/index.html';
             } else {
                 const error = document.querySelector('.error-message');
@@ -31,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         } else if (loginBtn.textContent === 'Register') {
             // Send registration request to the Spring Boot backend
-            const response = await axios.post('http://localhost:8081/register', {
+            const response = await axios.post('http://localhost:8090/register', {
                 username: username,
                 password: password
             });
@@ -39,7 +38,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (response.data.success) {
 
                 sessionStorage.setItem('username', username);
-                console.log('username registration: ', username);
 
                 window.location.href = '/index.html'; // or redirect to login page
             } else {

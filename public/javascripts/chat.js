@@ -3,7 +3,6 @@ let room;
 
 function init() {
     const username = sessionStorage.getItem('username');
-    console.log("username: ", username);
     const room_submit = document.querySelector('#connect-btn');
     const form_submit = document.querySelector('.wrapper');
     const chat_space = document.querySelector('.chat-space');
