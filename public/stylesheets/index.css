@@ -1,166 +1,243 @@
-/*colors: ##DEEFB7, ##108C00, ##414288, ##682D63, ##BB0A21*/
+/* Colors: #DEEFB7, #108C00, #414288, #682D63, #BB0A21 */
 
 body {
   margin: 0;
   font-family: 'Georgia', sans-serif;
-  background-color: white;
-  font-size: 20px;
+  background-color: #C1F5CD;
+  font-size: 18px;
 }
 
+/* Container for the top navigation */
 .topnav {
+  font-family: "Poppins", sans-serif;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #119DA4;
+  background-color: white;
   margin: 2px;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 10px 40px;
+  height: 60px;
+  caret-color: transparent;
 }
 
-.topnav a,
-.topnav span {
+/* Style for the logo to make it circular */
+.logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Container for the navigation links */
+.nav-center {
+  display: flex;
+  gap: 20px; /* Space between Home and Chat links */
+  justify-content: center;
+  flex-grow: 1; /* Allows the Home and Chat section to expand */
+}
+
+/* Style for the navigation links */
+.nav-center a {
   color: #04080F;
   text-align: center;
-  padding: 14px 16px;
+  padding: 10px 12px;
   text-decoration: none;
   font-weight: bold;
-  font-size: 17px;
-  margin-left: 10px;
-  margin-right: 10px;
+  font-size: 15px;
+  margin: 0 6px;
 }
 
-.topnav a:hover {
-  text-decoration: underline black;
+.active{
+  display: none;
 }
 
-.topnav #logo {
-  flex-grow: 1;
-  text-align: center;
-  font-size: 30px;
+.nav-center a:hover {
+  text-decoration: underline;
+}
+
+/* Style for the login container */
+.login-container {
+  background: #C1F5CD;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  margin-left: auto; /* Push the login container to the right */
+  padding: 10px 20px;
+}
+
+/* Style for the login link inside the login-container */
+.login-container a {
+  text-decoration: none; /* Removes underline */
   color: #04080F;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.login-container a:hover {
+  text-decoration: underline; /* Adds underline on hover for better UX */
+}
+
+/* Container for centering the entire section */
+.center-content {
+  caret-color: transparent;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 70vh; /* Full viewport height */
+  text-align: center;
+  padding: 20px;
+}
+
+/* Lighten the paragraph text */
+.center-content p {
+  color: #555; /* Light grey text color */
+  font-size: 1.1em;
+  max-width: 600px;
+  line-height: 1.6;
+}
+
+/* Style for the button and icon container */
+.btn-container {
+  display: flex;
+  align-items: center; /* Vertically align the button and icon */
+  margin-top: 20px;
+  background-color: black; /* Black background */
+  border-radius: 20px;
+}
+
+/* Style for the "Join Now" button */
+.btn {
+  display: inline-block;
+  padding: 12px 24px;
+  color: white;
   text-decoration: none;
+  font-weight: bold;
+  font-size: 1.2em;
+  margin-right: 10px; /* Space between button and icon */
+  margin-left: 20px;
 }
 
-.topnav #login {
-  float: right;
+/* Style for the icon */
+.btn-container i {
+  font-size: 24px; /* Adjust icon size */
+  color: white; /* Icon color */
+  margin-right: 30px; /* Space between icon and button */
 }
 
+
+/* Initial elements, such as "Home" and "Chat" */
 .initial {
   color: #04080F;
   display: block;
   text-align: center;
 }
 
-.active {
-  display: none;
+/* Common styles for select elements */
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
 }
 
 .inline-container {
-  display: flex; /* Use flexbox to arrange the items in a row */
-  justify-content: space-between; /* Space them evenly */
-  margin: 20px 20px; /* Add some margin for spacing */
+  display: flex;
+  justify-content: space-between;
+  margin: 10px 10px;
 }
 
 .inline-item {
-  flex: 1; /* Make each item take equal space */
-  margin: 0 10px; /* Add margin between items */
-  caret-color: transparent;
-}
-
-.inline-item select {
-  width: 100%; /* Make the select element take the full width of the container */
-  padding: 10px; /* Add padding for a bigger appearance */
-  border: 1px solid #ccc; /* Add a border for visual separation */
-  border-radius: 5px; /* Rounded corners */
-  background-color: #f9f9f9; /* Light background */
+  flex: 1;
+  margin: 0 5px;
 }
 
 .card-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  justify-content: center; /* Center horizontally */
-  margin-top: 20px;
-  padding: 20px;
-  width: 100%; /* Full width of the window */
+  gap: 12px;
+  justify-content: center;
+  margin-top: 10px;
+  padding: 10px;
+  width: 100%;
   box-sizing: border-box;
 }
 
 .card {
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  flex: 1 1 calc(20% - 32px); /* Adjust for 5 cards in a row (20% width each) */
-  max-width: 350px; /* Maximum width for cards */
-  min-width: 200px; /* Minimum width to ensure cards are not too small */  /* Added line */
-  height: auto; /* Allow height to adjust based on content */  /* Changed from 200px to auto */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-  box-sizing: border-box;
+  border-radius: 6px;
+  padding: 12px;
+  flex: 1 1 calc(25% - 24px);
+  max-width: 300px;
+  min-width: 180px;
+  height: auto;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .card h4 {
-  font-size: 1.2em;
-  margin: 0 0 8px;
+  font-size: 1.1em;
+  margin: 0 0 6px;
 }
 
 .card p {
   margin: 0;
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: #555;
 }
 
 /* Add hover effect */
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
 }
 
 .player_card {
   font-family: "Poppins", sans-serif;
-  display: flex; /* Flexible layout for side-by-side image and text */
-  align-items: center; /* Vertically align content */
-  justify-content: flex-start; /* Align content to the left */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px; /* Spacing between cards */
-  width: 80%; /* Full width for the card */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  box-sizing: border-box;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  width: 75%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* Player image */
 .player_card img {
-  width: 80px; /* Width of the image */
-  height: 80px; /* Height to maintain the square */
-  border-radius: 8px; /* Rounded corners */
-  object-fit: cover; /* Maintain aspect ratio of the image */
-  margin-right: 16px; /* Space between image and text */
+  width: 70px;
+  height: 70px;
+  border-radius: 6px;
+  object-fit: cover;
+  margin-right: 12px;
 }
 
 /* Optional: circular player image */
 .player-image {
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
-  margin-right: 10px;
+  margin-right: 8px;
 }
 
 /* Player name */
-.player_card h4, .player-info h4 {
-  font-size: 1.2em;
+.player_card h4,
+.player-info h4 {
+  font-size: 1.1em;
   margin: 0;
-  flex-grow: 1; /* Allow the element to grow and occupy available space */
+  flex-grow: 1;
 }
 
 /* Additional player information */
-.player_card p, .player-info p {
+.player_card p,
+.player-info p {
   margin: 0;
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: #555;
-  flex-grow: 1; /* Allow `p` to expand to occupy available space */
 }
 
 .player-info {
@@ -170,114 +247,166 @@ body {
 }
 
 /* Styles for the player card layout in displayPlayerAsCard */
-
-/* Main container for the player card */
 .player-card-container {
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
   background-color: #f9f9f9;
   border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 16px;
-  width: 80%; /* Make the card wider */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 12px;
+  width: 75%;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
-  caret-color: transparent;
-  font-family: "Poppins", sans-serif;
 }
 
-/* Player image in the top left corner */
 .player-card-container .player-image {
-  width: 120px; /* Larger image */
-  height: 120px;
-  border-radius: 8px;
+  width: 100px;
+  height: 100px;
+  border-radius: 6px;
   object-fit: cover;
-  margin-right: 20px; /* Space between image and info */
+  margin-right: 16px;
 }
 
-/* Container for the player information */
 .player-info {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
 }
 
-/* Header container for name and date of birth */
 .player-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
-/* Player name styling */
 .player-header h4 {
-  font-size: 1.8em;
+  font-size: 1.5em;
   margin: 0;
   font-weight: bold;
 }
 
-/* Date of birth on the same line as the name but aligned right */
 .player-header .dob {
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: #555;
-  margin-left: auto; /* Align date of birth to the right */
+  margin-left: auto;
 }
 
-/* Age directly under the player name */
 .player-info .age {
-  font-size: 1.1em;
-  margin-bottom: 8px;
-  color: #414288; /* Change the color to match the scheme */
+  font-size: 1em;
+  margin-bottom: 6px;
+  color: #414288;
 }
 
-/* General player information styling */
 .player-info p {
-  margin: 4px 0;
-  font-size: 1em;
+  margin: 2px 0;
+  font-size: 0.9em;
   color: #555;
 }
 
 .carousel-container {
   display: flex;
-  flex-direction: column; /* Stack items vertically */
-  align-items: center; /* Center horizontally */
-  justify-content: flex-end; /* Push items to the bottom */
-  background-image: url("../images/newsl3.jpg"); /* Set the background image */
-  background-size: cover; /* Cover the entire container */
-  background-position: center; /* Center the background image */
-  padding: 20px; /* Add some padding around the content */
-  border-radius: 10px; /* Rounded corners for the carousel */
-  height: 700px;
-  width: 75%; /* Set a max-width for the carousel */
-  margin: 20px auto; /* Center it on the page with auto margins */
-  position: relative; /* Set position relative for absolute positioning of children */
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  background-image: url("../images/newsl3.jpg");
+  background-size: cover;
+  background-position: center;
+  padding: 15px;
+  border-radius: 8px;
+  height: 600px;
+  width: 70%;
+  margin: 15px auto;
+  position: relative;
   font-family: "Poppins", sans-serif;
-  caret-color: transparent;
 }
 
 .carousel-item {
-  border-radius: 10px; /* Rounded corners for the news item */
+  border-radius: 8px;
   background: linear-gradient(#A6C97E, #92BD61);
-  position: absolute; /* Allow positioning within the carousel container */
+  position: absolute;
   width: 70%;
-  bottom: 20px; /* Distance from the bottom of the container */
-  left: 50%; /* Center horizontally */
-  transform: translateX(-50%); /* Adjust position to truly center */
-  text-align: center; /* Center align text */
-  padding: 0px 20px;
+  bottom: 15px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  padding: 15px 10px;
   color: black;
 }
 
 .news-container {
-  padding: 20px; /* Padding inside the news item */
-  border-radius: 10px; /* Rounded corners */
-  text-align: center; /* Center align text */
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
 }
 
 .news-item h2 {
-  margin-bottom: 10px; /* Space below the title */
+  margin-bottom: 6px;
+}
+
+#club-info-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80%;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.club-info-container {
+  margin: 0 auto;
+}
+
+.club-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto auto auto;
+  column-gap: 15px;
+  row-gap: 8px;
+  width: 100%;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.club-name {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.net-transfer {
+  grid-column: 2 / 3;
+  grid-row: 1 / 2;
+  text-align: right;
+}
+
+.average-age {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+}
+
+.last-season {
+  grid-column: 1 / 2;
+  grid-row: 3 / 4;
+}
+
+.stadium {
+  grid-column: 1 / 2;
+  grid-row: 4 / 5;
+}
+
+.club-logo {
+  grid-column: 2 / 3;
+  grid-row: 2 / 5;
+  justify-self: right;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 
