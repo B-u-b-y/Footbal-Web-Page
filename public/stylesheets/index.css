@@ -410,3 +410,137 @@ select {
   object-fit: cover;
 }
 
+.player-info {
+  position: relative; /* Required for absolute positioning of the button */
+  padding: 10px; /* Optional: Adjusts the padding */
+}
+
+.show-more-btn {
+  position: absolute; /* Allow positioning relative to the nearest positioned ancestor */
+  bottom: 10px; /* Adjust as needed for vertical position */
+  right: 10px; /* Position to the right */
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.tooltip {
+  display: none; /* Hide tooltip by default */
+  position: absolute;
+  bottom: 120%; /* Position above the button */
+  left: 50%; /* Center the tooltip */
+  transform: translateX(-50%); /* Center the tooltip */
+  background-color: #333; /* Background color for the tooltip */
+  color: #fff; /* Text color */
+  padding: 5px; /* Padding around the text */
+  border-radius: 4px; /* Rounded corners */
+  font-size: 12px; /* Font size */
+  white-space: nowrap; /* Prevent text from wrapping */
+  z-index: 10; /* Ensure it appears above other elements */
+}
+
+.show-more-btn:hover .tooltip {
+  display: block; /* Show tooltip on hover */
+}
+
+
+/* Main container for all appearances */
+.appearances-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  gap: 20px;
+  padding: 20px;
+  background-color: #f4f4f9;
+}
+
+/* Each appearance row container */
+.appearance-row {
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  width: 90%;
+  padding: 20px;
+  margin: 10px;
+  font-family: "Poppins", sans-serif;
+  transition: transform 0.2s;
+}
+
+/* Hover effect for each row */
+.appearance-row:hover {
+  transform: scale(1.05);
+}
+
+/* Header styling */
+.appearance-header {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.appearance-header .middle {
+  font-size: 14px;
+  color: #555;
+}
+
+/* Body styling */
+.appearance-body {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center the items */
+}
+
+/* Center the season in its own row */
+.season {
+  font-weight: bold;
+  text-align: center; /* Center text */
+  margin-bottom: 5px; /* Spacing below the season */
+}
+
+/* Teams row styling */
+.teams {
+  display: flex; /* Arrange team elements in a row */
+  justify-content: center; /* Center them */
+  width: 100%; /* Use full width */
+}
+
+.appearance-body .aggregate {
+  padding: 0 10px;
+  font-weight: bold;
+}
+
+/* Footer styling */
+.appearance-footer {
+  margin-top: 15px;
+}
+
+.appearance-footer p {
+  font-size: 14px;
+  color: #555;
+  margin: 5px 0;
+}
+
+.appearance-footer p strong {
+  color: #333;
+}
+
+/* Teams row styling */
+.appearance-body .teams {
+  display: flex;
+  justify-content: space-between; /* Distributes space between items */
+  align-items: center; /* Aligns items vertically in the center */
+}
+
+.appearance-body .home,
+.appearance-body .away {
+  flex: 1; /* Makes both home and away names take equal space */
+  text-align: center; /* Centers text in each section */
+}
+
+.appearance-body .aggregate {
+  flex: 0 0 auto; /* Keeps aggregate size fixed */
+  padding: 0 10px; /* Optional: Adjusts space around aggregate */
+}

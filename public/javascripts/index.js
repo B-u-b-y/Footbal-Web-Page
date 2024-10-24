@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
     checkLoginStatus();
     setupChatLink();
     initializeSelects(); // Call the function to initialize select elements
@@ -347,11 +347,98 @@ function displayPlayerAsCard(player) {
             <p>Preferred foot: <strong>${player.foot}</strong></p>
             <p>Current club: <strong>${player.current_club_name}</strong></p>
             <p>Market value: <strong>${player.market_value_in_eur}</strong></p>
+
+            <div class="more-info" style="display: none; margin-top: 10px;"></div>
+
+            <button class="show-more-btn">
+                <span class="tooltip">Show more info</span>
+                <span class="arrow">&#x25BC;</span>
+            </button>
         </div>
     `;
 
-    cardContainer.appendChild(card); // Append the card to the container
+    // Append the card to the container
+    cardContainer.appendChild(card);
+
+    // Add event listener to the arrow button
+    const showMoreBtn = card.querySelector('.show-more-btn');
+    const arrowIcon = showMoreBtn.querySelector('.arrow');
+    const moreInfoDiv = card.querySelector('.more-info');
+
+    // Handle the click to show or hide the more info container
+    // Handle the click to show or hide the more info container
+    showMoreBtn.addEventListener('click', async function() {
+        if (moreInfoDiv.style.display === 'none') {
+            try {
+                const response = await axios.get(`/server8091/api/appearances/appearances/games/${player.player_id}`);
+                console.log('Appearances:', response.data);
+                if(response.data && response.data.length > 0) {
+                    // Loop through each appearance and append the row to moreInfoDiv
+                    response.data.forEach(appearance => {
+                        const appearanceRow = createAppearanceRow(appearance);
+                        moreInfoDiv.appendChild(appearanceRow); // Append rows directly to moreInfoDiv
+                    });
+                }else{
+                    const noAppearances = document.createElement('p');
+                    noAppearances.textContent = 'No info found for this player.';
+                    moreInfoDiv.appendChild(noAppearances);
+                }
+
+                moreInfoDiv.style.display = 'block';
+                arrowIcon.innerHTML = '&#x25B2;'; // Change to up arrow (▲)
+                showMoreBtn.querySelector('.tooltip').textContent = 'Show less info';
+            } catch (error) {
+                console.error('Error fetching appearance details:', error);
+                alert('Error fetching appearance details. Please try again later.');
+            }
+        } else {
+            moreInfoDiv.style.display = 'none';
+            arrowIcon.innerHTML = '&#x25BC;'; // Change back to down arrow (▼)
+            showMoreBtn.querySelector('.tooltip').textContent = 'Show more info';
+        }
+    });
 }
+
+// Function to display appearance data in the specified layout
+function createAppearanceRow(appearance) {
+    // Create a container div for the appearance row
+    const appearanceRow = document.createElement('div');
+    appearanceRow.classList.add('appearance-row');
+
+    // Create and append elements in the specified order
+    appearanceRow.innerHTML = `
+    <div class="appearance-header">
+        <div class="top-left">Competition type:
+            <strong>${appearance.competition_type || 'N/A'}</strong>
+        </div>
+        <div class="middle"> 
+            <strong><span>${appearance.date || 'N/A'}</span></strong>
+        </div>
+        <div class="top-right"> Competition id:
+            <strong>${appearance.competition_id || 'N/A'}</strong>
+        </div>
+    </div>
+    <div class="appearance-body">
+        <div class="season" style="text-align: center;">
+            <strong>Season: </strong>${appearance.season || 'N/A'}
+        </div>
+        <div class="teams" style="display: flex; justify-content: space-between; align-items: center;">
+            <strong class="home">${appearance.home_club_name || 'N/A'}</strong>
+            <span class="aggregate">${appearance.aggregate || '-'}</span>
+            <strong class="away">${appearance.away_club_name || 'N/A'}</strong>
+        </div>
+    </div>
+    <div class="appearance-footer">
+        <p><strong>Yellow cards: </strong>${appearance.yellow_cards || 0}</p>
+        <p><strong>Red cards: </strong>${appearance.red_cards || 0}</p>
+        <p><strong>Goals: </strong>${appearance.goals || 0}</p>
+        <p><strong>Assists: </strong>${appearance.assists || 0}</p>
+        <p><strong>Minutes played: </strong>${appearance.minutes_played || 'N/A'}</p>
+    </div>
+`;
+    return appearanceRow;
+}
+
 
 function displayClubInfo(club) {
     const clubInfoContainer = document.getElementById('club-info-container');
