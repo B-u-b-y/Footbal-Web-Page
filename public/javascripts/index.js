@@ -119,6 +119,7 @@ function initializeSelects() {
         clubSelect.disabled = !selectedCompetition;
         playerSelect.disabled = true;
 
+        clubInfoContainer.style.display = 'none'; // Hide the club info container
         // Reset loading flags
         clubsLoaded = false; // Reset to allow fetching again
 
@@ -134,8 +135,23 @@ function initializeSelects() {
             const selectedCompetition = competitionSelect.value;
             try {
                 const response = await axios.get(`/server8090/${selectedCompetition}/clubs`);
-                displayOptions(clubSelect, response.data, 'club_id', 'name');
-                clubsLoaded = true;
+                if(response.data && response.data.length > 0) {
+                    displayOptions(clubSelect, response.data, 'club_id', 'name');
+                    clubsLoaded = true;
+                } else {
+                    const response = await axios.get(`/server8091/api/games/competition/${selectedCompetition}`);
+                    if(response.data && response.data.length > 0) {
+                        const cardContainer = document.getElementById('card-container');
+                        cardContainer.innerHTML = ''; // Clear existing cards
+                        response.data.forEach(game => {
+                            const matchDetailsRow = createMatchDetailsRow(game);
+                            cardContainer.appendChild(matchDetailsRow); // Append rows directly to cardContainer
+                        });
+                        cardContainer.style.display = 'flex';
+                        cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
+                        cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
+                    }
+                }
             } catch (error) {
                 console.error('Error fetching clubs:', error);
                 alert('Error fetching clubs. Please try again later.');
@@ -151,7 +167,6 @@ function initializeSelects() {
 
         // Reset loading flag
         playersLoaded = false; // Reset to allow fetching again
-
         // Fetch players for the selected club
         if (selectedClub) {
             await fetchPlayers(selectedClub);
@@ -203,7 +218,24 @@ function initializeSelects() {
     async function fetchClubs(competition) {
         try {
             const response = await axios.get(`/server8090/${competition}/clubs`);
-            displayClubsAsCards(response.data);
+            if (response.data && response.data.length > 0) {
+                displayClubsAsCards(response.data);
+            }else{
+                const response = await axios.get(`/server8091/api/games/competition/${competition}`);
+                if(response.data && response.data.length > 0) {
+                    const clubSelect = document.getElementById('club-select');
+                    clubSelect.disabled = true;
+                    const cardContainer = document.getElementById('card-container');
+                    cardContainer.innerHTML = ''; // Clear existing cards
+                    response.data.forEach(game => {
+                        const matchDetailsRow = createMatchDetailsRow(game);
+                        cardContainer.appendChild(matchDetailsRow); // Append rows directly to cardContainer
+                    });
+                    cardContainer.style.display = 'flex';
+                    cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
+                    cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
+                }
+            }
         } catch (error) {
             console.error('Error fetching clubs:', error);
             alert('Error fetching clubs. Please try again later.');
@@ -371,7 +403,6 @@ function displayPlayerAsCard(player) {
         if (moreInfoDiv.style.display === 'none') {
             try {
                 const response = await axios.get(`/server8091/api/appearances/appearances/games/${player.player_id}`);
-                console.log('Appearances:', response.data);
                 if(response.data && response.data.length > 0) {
                     // Loop through each appearance and append the row to moreInfoDiv
                     response.data.forEach(appearance => {
@@ -446,18 +477,68 @@ function displayClubInfo(club) {
     // Clear any previous content
     clubInfoContainer.innerHTML = '';
 
-    // Insert the club info into the new container
+    // Insert the club info into the new container with a Show More button
     clubInfoContainer.innerHTML = `
-        <div class="club-card">
-            <h3 class="club-name">${club.name}</h3>
-            <p class="net-transfer">Net transfer record: <strong>${club.net_transfer_record || 'N/A'}</strong></p>
+    <div class="club-card">
+        <h3 class="club-name">${club.name}</h3>
+        
+        <div class="info-row">
             <p class="average-age">Average age: <strong>${club.average_age || 'N/A'}</strong></p>
-            <p class="last-season">Last season: <strong>${club.last_season || 'N/A'}</strong></p>
-            <p class="stadium">Stadium: <strong>${club.stadium_name || 'N/A'}</strong></p>
+            <p class="net-transfer">Net transfer record: <strong>${club.net_transfer_record || 'N/A'}</strong></p>
         </div>
+        
+        <div class="additional-info">
+            <p class="last-season">Last season: <strong>${club.last_season || 'Unknown'}</strong></p>
+            <p class="stadium">Stadium: <strong>${club.stadium_name || 'Unknown'}</strong></p>
+        </div>
+
+        <div class="more-info" style="display: none; margin-top: 10px;"></div>
+
+        <button class="show-more-btn">
+            <span class="tooltip">Show more info</span>
+            <span class="arrow">&#x25BC;</span>
+        </button>
+    </div>
     `;
 
-    clubInfoContainer.style.display = 'block'; // Show the club info container
+
+
+    // Add event listener for Show More button
+    const showMoreBtn = clubInfoContainer.querySelector('.show-more-btn');
+    const arrowIcon = showMoreBtn.querySelector('.arrow');
+    const moreInfoDiv = clubInfoContainer.querySelector('.more-info');
+
+    showMoreBtn.addEventListener('click', async function() {
+        if (moreInfoDiv.style.display === 'none') {
+            try{
+                const response = await axios.get(`/server8091/api/club_games/club/games/${club.club_id}`);
+                if(response.data && response.data.length > 0) {
+                    // Loop through each appearance and append the row to moreInfoDiv
+                    for (const appearance of response.data) {
+                        const opponent = await axios.get(`/server8090/clubs/${appearance.opponent_id}`);
+                        const games = displayClubGames(appearance, opponent.data, club.name);
+                        moreInfoDiv.appendChild(games); // Append rows directly to moreInfoDiv
+                    }
+                }else{
+                    const noAppearances = document.createElement('p');
+                    noAppearances.textContent = 'No info found for this club.';
+                    moreInfoDiv.appendChild(noAppearances);
+                }
+            }catch (error){
+                console.error('Error fetching appearance details:', error);
+                alert('Error fetching appearance details. Please try again later.');
+            }
+            moreInfoDiv.style.display = 'block';
+            arrowIcon.innerHTML = '&#x25B2;'; // Change to up arrow (▲)
+            showMoreBtn.querySelector('.tooltip').textContent = 'Show less info';
+        } else {
+            moreInfoDiv.style.display = 'none';
+            arrowIcon.innerHTML = '&#x25BC;'; // Change back to down arrow (▼)
+            showMoreBtn.querySelector('.tooltip').textContent = 'Show more info';
+        }
+    });
+
+    clubInfoContainer.style.display = 'block';
 }
 
 // Function to display options in a select element
@@ -481,6 +562,209 @@ function displayOptions(selectElement, options, valueKey, textKey) {
         }
         selectElement.appendChild(optionElement);
     });
+}
+
+function createMatchDetailsRow(match) {
+    // Create a container div for the match details
+    const matchRow = document.createElement('div');
+    matchRow.classList.add('match-row');
+
+    // Structure the match data into HTML format
+    matchRow.innerHTML = `
+        <div class="match-header">
+            <div class="top-left">
+                <strong>Competition: ${match.competition_id || 'N/A'} (${match.competition_type || 'N/A'})</strong>
+            </div>
+            <div class="middle">
+                <strong>Date: </strong>${new Date(match.date).toLocaleDateString() || 'N/A'}
+            </div>
+            <div class="top-right">
+                <strong>Round: ${match.round || 'N/A'}</strong>
+            </div>
+        </div>
+        <div class="match-body">
+            <div class="teams">
+                <div class="team-left">
+                    <strong>${match.home_club_name || 'N/A'}</strong>
+                    <p>Manager: ${match.home_club_manager_name || 'N/A'}</p>
+                    <p>Formation: ${match.home_club_formation || 'N/A'}</p>
+                </div>
+                <div class="score-center">
+                    <strong>${match.home_club_goals} : ${match.away_club_goals}</strong>
+                </div>
+                <div class="team-right">
+                    <strong>${match.away_club_name || 'N/A'}</strong>
+                    <p>Manager: ${match.away_club_manager_name || 'N/A'}</p>
+                    <p>Formation: ${match.away_club_formation || 'N/A'}</p>
+                </div>
+            </div>
+        </div>
+        <div class="match-footer">
+            <p><strong>Stadium: </strong>${match.stadium || 'N/A'}</p>
+            <p><strong>Attendance: </strong>${match.attendance || 'N/A'}</p>
+            <p><strong>Referee: </strong>${match.referee || 'N/A'}</p>
+        </div>
+    `;
+
+    return matchRow;
+}
+
+function displayClubGames(game, opponent, clubName) {
+    // Create a container div for the game details
+    const gameContainer = document.createElement('div');
+    gameContainer.classList.add('game-container');
+
+    // Create a hidden element to store the game ID
+    const hiddenElement = document.createElement('div');
+    hiddenElement.textContent = game.game_id; // Store the game ID in the hidden element
+    hiddenElement.style.display = 'none'; // Initially hidden
+    hiddenElement.classList.add('hidden-element'); // Add the class
+
+    // Append the hidden element to the gameContainer
+    gameContainer.appendChild(hiddenElement);
+
+    // HTML structure for game details
+    gameContainer.innerHTML += `  
+    <div class="game-header">
+        <div class="team-left">
+            <strong>${clubName}</strong>
+            <p>Manager: <strong>${game.own_manager_name || 'N/A'}</strong></p>
+            <p>Position: <strong>${game.own_position || 'N/A'}</strong></p>
+        </div>
+        <div class="score-center">
+            <strong>${game.own_goals} : ${game.opponent_goals}</strong>
+        </div>
+        <div class="team-right">
+            <strong>${opponent.name}</strong>
+            <p>Manager: <strong>${game.opponent_manager_name || 'N/A'}</strong></p>
+            <p>Position: <strong>${game.opponent_position || 'N/A'}</strong></p>
+        </div>
+    </div>
+    <div class="game-footer">
+        <p><strong>Hosting: </strong><strong>${game.hosting || 'N/A'}</strong></p>
+        <div class="arrow-container">
+            <span class="tooltip-right">Show more info</span>
+            <span class="right-arrow">&#11208;</span> <!-- Right arrow -->
+        </div>
+    </div>
+    `;
+
+    // Add click event to display selected game details
+    gameContainer.addEventListener('click', () => {
+        displaySelectedGameDetails(game, opponent, clubName);
+    });
+
+    // Add click event for the arrow to show game details
+    gameContainer.querySelector('.right-arrow').addEventListener('click', (event) => {
+        event.stopPropagation(); // Prevent triggering the gameContainer click
+        hideContent(clubName, opponent.name); // Call the function to hide content
+    });
+
+    return gameContainer;
+}
+
+// Function to hide content except topnav and inline-container
+function hideContent(homeTeam, awayTeam) {
+    // Hide main content areas
+    const centerContent = document.querySelector('.center-content');
+    const clubInfoContainer = document.getElementById('club-info-container');
+    const cardContainer = document.getElementById('card-container');
+    const appearancesContainer = document.getElementById('appearancesContainer');
+
+    centerContent.style.display = 'none';
+    clubInfoContainer.style.display = 'none';
+    cardContainer.style.display = 'none';
+    appearancesContainer.style.display = 'none';
+
+    // Correctly select the hidden element associated with the clicked game
+    const hiddenElement = document.querySelector('.game-container .hidden-element'); // Changed to select hidden element properly
+    displaySelectedGameDetails(hiddenElement, homeTeam, awayTeam);
+}
+
+async function displaySelectedGameDetails(hiddenElement, homeTeam, awayTeam) {
+    const gameID = hiddenElement.textContent; // Extract the game ID from the hidden element
+
+    try {
+        // Fetch the game events
+        const response = await axios.get(`/server8091/api/game_events/game/${gameID}`);
+        const gameEvents = response.data;
+
+        // Check if a details container already exists
+        const existingDetailsContainer = document.querySelector('.details-container');
+        if (existingDetailsContainer) {
+            // Clear the existing container's content
+            existingDetailsContainer.remove(); // Alternatively, you could clear its content using innerHTML = ''
+        }
+
+        // Create a container for the entire game details
+        const detailsContainer = document.createElement('div');
+        detailsContainer.classList.add('details-container'); // New class for the outer container
+
+        // Create a container to hold the two columns
+        const container = document.createElement('div');
+        container.classList.add('game-details-container'); // Use the CSS class for the container
+
+        // Create the home team column
+        const homeColumn = createTeamEventsColumn(gameEvents, homeTeam);
+
+        // Create the away team column
+        const awayColumn = createTeamEventsColumn(gameEvents, awayTeam);
+
+        // Append both columns to the container
+        container.appendChild(homeColumn);
+        container.appendChild(awayColumn);
+
+        // Append the container to the details container
+        detailsContainer.appendChild(container);
+
+        // Finally, append the details container to the body or any other parent element
+        document.body.appendChild(detailsContainer);
+    } catch (error) {
+        console.error('Error fetching game events:', error);
+    }
+}
+
+// Helper function to create a team's events column
+function createTeamEventsColumn(gameEvents, teamName) {
+    // Sanitize the team name for the class name (replace spaces with hyphens)
+    const sanitizedTeamName = teamName.replace(/\s+/g, '-').toLowerCase(); // Replace spaces with hyphens and convert to lowercase
+
+    // Create the team column
+    const teamColumn = document.createElement('div');
+    teamColumn.classList.add(`${sanitizedTeamName}-column`, 'team-column'); // Use the sanitized team name for class
+
+    // Create a heading for the team
+    const teamHeading = document.createElement('h2');
+    teamHeading.textContent = teamName; // Use the passed team name
+    teamColumn.appendChild(teamHeading);
+
+    // Append the team's game events
+    gameEvents.forEach(event => {
+        if (event.club_name === teamName) {
+            const eventElement = document.createElement('p');
+
+            // Check if the event type is "Goals"
+            if (event.type === 'Goals') {
+                eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;⚽ Goal: <strong>${event.player_name}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
+            }
+            // Check if the event type is "Substitutions"
+            else if (event.type === 'Substitutions') {
+                eventElement.classList.add('substitution-event'); // Add a special class for substitutions
+                eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;🔄 Substitution: <strong>${event.player_name}</strong> substituted by <strong>${event.player_in_id}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
+            }
+            // Check if the event type is "Cards"
+            else if (event.type === 'Cards') {
+                eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;🟨🟥 Card: <strong>${event.player_name}</strong> received a card<br>&emsp;Description <strong>${event.description}</strong>`;
+            }
+            // Default case for other events
+            else {
+                eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;Player: <strong>${event.player_name}</strong> <br>&emsp;Type: <strong>${event.type}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
+            }
+            teamColumn.appendChild(eventElement);
+        }
+    });
+
+    return teamColumn; // Return the completed team column
 }
 
 // Remove the username from sessionStorage when the page is closed
