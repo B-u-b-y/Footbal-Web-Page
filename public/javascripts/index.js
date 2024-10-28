@@ -15,7 +15,6 @@ function checkLoginStatus() {
         login.style.display = 'none';
         userNameDisplay.textContent = `${username}`;
         userNameDisplay.style.display = 'inline';
-        sessionStorage.setItem('username', username);
     }
 }
 
@@ -83,10 +82,6 @@ function initializeSelects() {
         competitionsLoaded = false; // Reset to allow fetching again
         clubsLoaded = false; // Reset to allow fetching again
         playersLoaded = false; // Reset to allow fetching again
-
-        // Clear existing cards in card-container
-        const cardContainer = document.getElementById('card-container');
-        cardContainer.innerHTML = ''; // Clear existing cards
 
         // Fetch competitions for the selected country
         if (selectedCountry) {
@@ -190,6 +185,11 @@ function initializeSelects() {
 
     // Event handler for player select (on change)
     playerSelect.addEventListener('change', async function () {
+        const details_container = document.querySelector('.details-container');
+        if(details_container){
+            details_container.style.display = 'none';
+        }
+
         const selectedPlayer = this.value;
 
         // Clear existing cards in card-container
@@ -275,6 +275,11 @@ function displayCompetitionsAsCards(competitions) {
     const cardContainer = document.getElementById('card-container');
     cardContainer.innerHTML = ''; // Clear existing cards
 
+    const details_container = document.querySelector('.details-container');
+    if(details_container){
+        details_container.style.display = 'none';
+    }
+
     competitions.forEach(competition => {
         const card = document.createElement('div');
         card.classList.add('card');
@@ -321,7 +326,7 @@ function displayClubsAsCards(clubs) {
 
     const club_info_container = document.getElementById('club-info-container');
     club_info_container.style.display = 'none'; // Hide the club info container
-    // Ensure cardContainer is displayed as flex and adjusts accordingly
+
     cardContainer.style.display = 'flex';
     cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
     cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
@@ -359,12 +364,11 @@ function displayPlayersAsCards(players) {
 // Function to display player details as a card
 function displayPlayerAsCard(player) {
     const cardContainer = document.getElementById('card-container');
-    cardContainer.innerHTML = ''; // Clear existing cards
+    cardContainer.innerHTML = '';
 
     const card = document.createElement('div');
     card.classList.add('player-card-container');
 
-    // Create card content
     card.innerHTML = `
         <img src="${player.image_url || '../images/default.png'}" alt="${player.name}" class="player-image">
         <div class="player-info">
@@ -379,9 +383,7 @@ function displayPlayerAsCard(player) {
             <p>Preferred foot: <strong>${player.foot}</strong></p>
             <p>Current club: <strong>${player.current_club_name}</strong></p>
             <p>Market value: <strong>${player.market_value_in_eur}</strong></p>
-
             <div class="more-info" style="display: none; margin-top: 10px;"></div>
-
             <button class="show-more-btn">
                 <span class="tooltip">Show more info</span>
                 <span class="arrow">&#x25BC;</span>
@@ -389,20 +391,18 @@ function displayPlayerAsCard(player) {
         </div>
     `;
 
-    // Append the card to the container
     cardContainer.appendChild(card);
 
-    // Add event listener to the arrow button
     const showMoreBtn = card.querySelector('.show-more-btn');
     const arrowIcon = showMoreBtn.querySelector('.arrow');
     const moreInfoDiv = card.querySelector('.more-info');
 
-    // Handle the click to show or hide the more info container
-    // Handle the click to show or hide the more info container
     showMoreBtn.addEventListener('click', async function() {
         if (moreInfoDiv.style.display === 'none') {
             try {
+                showLoadingSpinner();
                 const response = await axios.get(`/server8091/api/appearances/appearances/games/${player.player_id}`);
+                hideLoadingSpinner();
                 if(response.data && response.data.length > 0) {
                     // Loop through each appearance and append the row to moreInfoDiv
                     response.data.forEach(appearance => {
@@ -501,8 +501,6 @@ function displayClubInfo(club) {
     </div>
     `;
 
-
-
     // Add event listener for Show More button
     const showMoreBtn = clubInfoContainer.querySelector('.show-more-btn');
     const arrowIcon = showMoreBtn.querySelector('.arrow');
@@ -511,11 +509,15 @@ function displayClubInfo(club) {
     showMoreBtn.addEventListener('click', async function() {
         if (moreInfoDiv.style.display === 'none') {
             try{
+                showLoadingSpinner();
                 const response = await axios.get(`/server8091/api/club_games/club/games/${club.club_id}`);
                 if(response.data && response.data.length > 0) {
                     // Loop through each appearance and append the row to moreInfoDiv
                     for (const appearance of response.data) {
                         const opponent = await axios.get(`/server8090/clubs/${appearance.opponent_id}`);
+                        if(!opponent.data) {
+                            opponent.data = 'unknown';
+                        }
                         const games = displayClubGames(appearance, opponent.data, club.name);
                         moreInfoDiv.appendChild(games); // Append rows directly to moreInfoDiv
                     }
@@ -524,6 +526,7 @@ function displayClubInfo(club) {
                     noAppearances.textContent = 'No info found for this club.';
                     moreInfoDiv.appendChild(noAppearances);
                 }
+                hideLoadingSpinner();
             }catch (error){
                 console.error('Error fetching appearance details:', error);
                 alert('Error fetching appearance details. Please try again later.');
@@ -610,18 +613,21 @@ function createMatchDetailsRow(match) {
 }
 
 function displayClubGames(game, opponent, clubName) {
-    // Create a container div for the game details
     const gameContainer = document.createElement('div');
     gameContainer.classList.add('game-container');
 
-    // Create a hidden element to store the game ID
-    const hiddenElement = document.createElement('div');
-    hiddenElement.textContent = game.game_id; // Store the game ID in the hidden element
-    hiddenElement.style.display = 'none'; // Initially hidden
-    hiddenElement.classList.add('hidden-element'); // Add the class
+    // Add data attributes for team IDs
+    gameContainer.dataset.homeTeamId = game.club_id;
 
-    // Append the hidden element to the gameContainer
-    gameContainer.appendChild(hiddenElement);
+    // Check if opponent is undefined or 'unknown'
+    if (opponent === undefined || opponent === 'unknown') {
+        gameContainer.dataset.awayTeamId = 'unknown';
+        opponent = { name: 'unknown' }; // Assign an object to opponent with name property
+    } else {
+        gameContainer.dataset.awayTeamId = game.opponent_id; // Use the actual opponent ID
+    }
+
+    gameContainer.dataset.gameId = game.game_id;
 
     // HTML structure for game details
     gameContainer.innerHTML += `  
@@ -650,22 +656,25 @@ function displayClubGames(game, opponent, clubName) {
     `;
 
     // Add click event to display selected game details
-    gameContainer.addEventListener('click', () => {
+    gameContainer.addEventListener('click', (event) => {
+        event.stopPropagation();  // Prevent click from bubbling up
         displaySelectedGameDetails(game, opponent, clubName);
     });
 
     // Add click event for the arrow to show game details
     gameContainer.querySelector('.right-arrow').addEventListener('click', (event) => {
+        const player_select = document.querySelector('#player-select');
+        player_select.disabled = true;
         event.stopPropagation(); // Prevent triggering the gameContainer click
-        hideContent(clubName, opponent.name); // Call the function to hide content
+        hideContent(clubName, opponent.name, gameContainer);
     });
 
     return gameContainer;
 }
 
+
 // Function to hide content except topnav and inline-container
-function hideContent(homeTeam, awayTeam) {
-    // Hide main content areas
+function hideContent(homeTeam, awayTeam, gameContainer) {
     const centerContent = document.querySelector('.center-content');
     const clubInfoContainer = document.getElementById('club-info-container');
     const cardContainer = document.getElementById('card-container');
@@ -676,98 +685,162 @@ function hideContent(homeTeam, awayTeam) {
     cardContainer.style.display = 'none';
     appearancesContainer.style.display = 'none';
 
-    // Correctly select the hidden element associated with the clicked game
-    const hiddenElement = document.querySelector('.game-container .hidden-element'); // Changed to select hidden element properly
-    displaySelectedGameDetails(hiddenElement, homeTeam, awayTeam);
+    displaySelectedGameDetails(gameContainer, homeTeam, awayTeam);
 }
 
-async function displaySelectedGameDetails(hiddenElement, homeTeam, awayTeam) {
-    const gameID = hiddenElement.textContent; // Extract the game ID from the hidden element
+async function displaySelectedGameDetails(gameContainer, homeTeam, awayTeam) {
+    const gameID = gameContainer.dataset.gameId;
+
+    // Access the score-center div
+    const scoreCenterDiv = gameContainer.querySelector('.score-center');
+    const scoreContent = scoreCenterDiv.textContent;
 
     try {
-        // Fetch the game events
         const response = await axios.get(`/server8091/api/game_events/game/${gameID}`);
         const gameEvents = response.data;
 
         // Check if a details container already exists
         const existingDetailsContainer = document.querySelector('.details-container');
         if (existingDetailsContainer) {
-            // Clear the existing container's content
-            existingDetailsContainer.remove(); // Alternatively, you could clear its content using innerHTML = ''
+            existingDetailsContainer.remove();
         }
 
-        // Create a container for the entire game details
         const detailsContainer = document.createElement('div');
-        detailsContainer.classList.add('details-container'); // New class for the outer container
+        detailsContainer.classList.add('details-container');
 
-        // Create a container to hold the two columns
         const container = document.createElement('div');
-        container.classList.add('game-details-container'); // Use the CSS class for the container
+        container.classList.add('game-details-container');
 
-        // Create the home team column
+        const scoreContainer = document.createElement('div'); // New score container
+        scoreContainer.classList.add('score-container');
+
         const homeColumn = createTeamEventsColumn(gameEvents, homeTeam);
-
-        // Create the away team column
         const awayColumn = createTeamEventsColumn(gameEvents, awayTeam);
 
-        // Append both columns to the container
         container.appendChild(homeColumn);
         container.appendChild(awayColumn);
 
-        // Append the container to the details container
+        const scoreDiv = document.createElement('div');
+        scoreDiv.classList.add('game-score');
+        scoreDiv.textContent = scoreContent;
+
+        scoreContainer.appendChild(scoreDiv); // Append scoreDiv to scoreContainer
+        detailsContainer.appendChild(scoreContainer); // Append scoreContainer to detailsContainer
         detailsContainer.appendChild(container);
 
-        // Finally, append the details container to the body or any other parent element
         document.body.appendChild(detailsContainer);
+
+        await displayFormation(gameContainer, homeColumn, awayColumn);
+
     } catch (error) {
         console.error('Error fetching game events:', error);
     }
 }
 
-// Helper function to create a team's events column
 function createTeamEventsColumn(gameEvents, teamName) {
-    // Sanitize the team name for the class name (replace spaces with hyphens)
-    const sanitizedTeamName = teamName.replace(/\s+/g, '-').toLowerCase(); // Replace spaces with hyphens and convert to lowercase
-
-    // Create the team column
     const teamColumn = document.createElement('div');
-    teamColumn.classList.add(`${sanitizedTeamName}-column`, 'team-column'); // Use the sanitized team name for class
+    teamColumn.classList.add('team-column');
 
-    // Create a heading for the team
     const teamHeading = document.createElement('h2');
-    teamHeading.textContent = teamName; // Use the passed team name
+    teamHeading.textContent = teamName;
     teamColumn.appendChild(teamHeading);
 
-    // Append the team's game events
+    // Defensive check for gameEvents
+    if (!Array.isArray(gameEvents)) {
+        console.error('gameEvents is not an array:', gameEvents);
+        return teamColumn; // or handle as needed
+    }
+
     gameEvents.forEach(event => {
-        if (event.club_name === teamName) {
+        // Check for event.club_name
+        if (event.club_name && event.club_name.toLowerCase() === teamName.toLowerCase()) {
             const eventElement = document.createElement('p');
 
-            // Check if the event type is "Goals"
+            // Handling different event types
             if (event.type === 'Goals') {
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;⚽ Goal: <strong>${event.player_name}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
-            }
-            // Check if the event type is "Substitutions"
-            else if (event.type === 'Substitutions') {
-                eventElement.classList.add('substitution-event'); // Add a special class for substitutions
+            } else if (event.type === 'Substitutions') {
+                eventElement.classList.add('substitution-event');
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;🔄 Substitution: <strong>${event.player_name}</strong> substituted by <strong>${event.player_in_id}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
-            }
-            // Check if the event type is "Cards"
-            else if (event.type === 'Cards') {
+            } else if (event.type === 'Cards') {
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;🟨🟥 Card: <strong>${event.player_name}</strong> received a card<br>&emsp;Description <strong>${event.description}</strong>`;
-            }
-            // Default case for other events
-            else {
+            } else {
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;Player: <strong>${event.player_name}</strong> <br>&emsp;Type: <strong>${event.type}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
             }
             teamColumn.appendChild(eventElement);
         }
     });
 
-    return teamColumn; // Return the completed team column
+    return teamColumn;
 }
 
-// Remove the username from sessionStorage when the page is closed
-window.onbeforeunload = function () {
-    sessionStorage.removeItem('username');
-};
+async function displayFormation(gameContainer, homeColumn, awayColumn) {
+    const homeTeamId = gameContainer.dataset.homeTeamId;
+    const awayTeamId = gameContainer.dataset.awayTeamId;
+    const gameID = gameContainer.dataset.gameId;
+
+    try {
+        // Fetch formation for the home team
+        const homeFormation = document.createElement('div');
+        homeFormation.classList.add('formation');
+
+        if (homeTeamId !== 'unknown') {
+            const response_home = await axios.get(`/server8091/api/game_lineups/game/${gameID}/${homeTeamId}`);
+            if (response_home.data && response_home.data.length > 0) {
+                response_home.data.forEach(player => {
+                    const playerInfo = document.createElement('p');
+                    playerInfo.innerHTML = `
+                        Type: ${player.type} <br>
+                        Number: ${player.number} <br>
+                        Player: ${player.player_name} <br>
+                        Position: ${player.position}
+                        ${player.team_captain === 1 ? '<br>Captain' : ''}
+                    `;
+                    homeFormation.appendChild(playerInfo);
+                });
+            } else {
+                homeFormation.textContent = 'No formation found';
+            }
+        } else {
+            homeFormation.textContent = 'No formation found';
+        }
+        homeColumn.appendChild(homeFormation);
+
+        // Fetch formation for the away team
+        const awayFormation = document.createElement('div');
+        awayFormation.classList.add('formation');
+
+        if (awayTeamId !== 'unknown') {
+            const response_away = await axios.get(`/server8091/api/game_lineups/game/${gameID}/${awayTeamId}`);
+            if (response_away.data && response_away.data.length > 0) {
+                response_away.data.forEach(player => {
+                    const playerInfo = document.createElement('p');
+                    playerInfo.innerHTML = `
+                        Type: ${player.type} <br>
+                        Number: ${player.number} <br>
+                        Player: ${player.player_name} <br>
+                        Position: ${player.position}
+                        ${player.team_captain === 1 ? '<br>Captain' : ''}
+                    `;
+                    awayFormation.appendChild(playerInfo);
+                });
+            } else {
+                awayFormation.textContent = 'No formation found';
+            }
+        } else {
+            awayFormation.textContent = 'No formation found';
+        }
+        awayColumn.appendChild(awayFormation);
+
+    } catch (error) {
+        console.error('Error fetching formation data:', error);
+    }
+}
+
+function showLoadingSpinner() {
+    document.getElementById('loading-spinner').classList.remove('hidden');
+}
+
+function hideLoadingSpinner() {
+    document.getElementById('loading-spinner').classList.add('hidden');
+}

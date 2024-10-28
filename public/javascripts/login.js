@@ -19,9 +19,8 @@ document.addEventListener('DOMContentLoaded', function () {
             });
 
             if (response.data.success) {
-
                 sessionStorage.setItem('username', username);
-                window.location.href = '/index.html';
+                window.location.href = '/';
             } else {
                 const error = document.querySelector('.error-message');
                 error.innerHTML = 'Invalid username or password.';
@@ -39,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 sessionStorage.setItem('username', username);
 
-                window.location.href = '/index.html'; // or redirect to login page
+                window.location.href = '/'; // or redirect to login page
             } else {
                 const error = document.querySelector('.error-message');
                 error.innerHTML = 'Registration failed. Username may already exist.';

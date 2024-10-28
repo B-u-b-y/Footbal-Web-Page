@@ -71,6 +71,16 @@ router.get('/players/:player_id', async (req, res) => {
     }
 });
 
+router.get('/club_id/:club_id', async (req, res) => {
+    const { club_id } = req.params; // Extract the club ID from the request parameters
+    try {
+        const response = await axios.get(`http://localhost:8090/club_id/${club_id}`);
+        res.send(response.data);
+    } catch (error) {
+        console.error('Error during fetching club details:', error);
+        res.status(500).json({ error: 'An error occurred during the fetching club details request.' });
+    }
+});
 
 
 module.exports = router;

@@ -58,7 +58,7 @@ function init() {
     leave_room.addEventListener('click', () => {
         socket.emit('leave', { room });
         sessionStorage.setItem('username', username); // Store username in session storage
-        window.location.href = '/index.html'; // Redirect to the main page after leaving
+        window.location.href = '/'; // Redirect to the main page after leaving
     });
 
     // Listen for messages from the server

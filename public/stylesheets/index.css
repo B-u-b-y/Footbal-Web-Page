@@ -688,112 +688,6 @@ select {
   transition: color 0.2s; /* Optional: Transition effect for hover */
 }
 
-.football-field-container {
-  display: flex;                   /* Use flexbox for alignment */
-  justify-content: center;         /* Center horizontally */
-  align-items: center;             /* Center vertically (if needed) */
-  height: 100vh;                   /* Full viewport height, adjust as necessary */
-}
-
-.football-field {
-  display: grid;                          /* Use grid layout */
-  grid-template-columns: repeat(5, 1fr); /* 5 columns for the field */
-  grid-template-rows: repeat(6, 1fr);    /* 7 rows for the field */
-  width: 800px;                           /* Width of the football field */
-  height: 500px;                          /* Height of the football field */
-  border: 2px solid black;                /* Border for the field */
-  background: url("../images/half-field.png") no-repeat center center; /* Background image */
-  background-size: cover;                 /* Cover the field */
-}
-
-
-/* Player Positioning */
-.center-forward {
-  grid-column: 2;                         /* Column 2 */
-  grid-row: 1;                            /* Row 1 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.left-midfield {
-  grid-column: 1;                         /* Column 1 */
-  grid-row: 2;                            /* Row 2 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.right-midfield {
-  grid-column: 5;                         /* Column 5 */
-  grid-row: 2;                            /* Row 2 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.central-midfield {
-  grid-column: 2;                         /* Column 2 */
-  grid-row: 3;                            /* Row 3 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-/* Alternative positioning for center forward */
-.center-forward-alt {
-  grid-column: 4;                         /* Column 4 */
-  grid-row: 1;                            /* Row 1 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-/* Defenders */
-.left-back {
-  grid-column: 1;                         /* Column 1 */
-  grid-row: 4;                            /* Row 4 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.right-back {
-  grid-column: 5;                         /* Column 5 */
-  grid-row: 4;                            /* Row 4 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.center-back {
-  grid-column: 2;                         /* Column 2 */
-  grid-row: 5;                            /* Row 5 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.center-back-alt {
-  grid-column: 4;                         /* Column 4 */
-  grid-row: 5;                            /* Row 5 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.goalkeeper {
-  grid-column: 3;                         /* Column 3 */
-  grid-row: 6;                            /* Row 6 */
-  background-color: rgba(255, 255, 255, 0.8);
-  text-align: center;
-  line-height: 60px;
-}
-
-.cell-border {
-  border: 1px solid black; /* Highlight border color */
-}
-
 /* Styles for the overall details container */
 .details-container {
   width: 80%; /* Full width of the parent */
@@ -814,12 +708,18 @@ select {
 
 /* Styles for each team column */
 .team-column {
-  width: 48%; /* Each column takes up 48% of the total width */
-  padding: 15px; /* Padding inside the column */
-  background-color: #f9f9f9; /* Light gray background for readability */
-  border: 1px solid #ddd; /* Light border for each column */
-  border-radius: 5px; /* Slightly rounded corners */
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures content is spaced between the top and bottom */
+  width: 48%; /* Width of each team column */
+  padding: 15px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+  position: relative; /* Required to position absolute items inside */
+  min-height: 200px; /* Minimum height for consistent layout */
 }
 
 /* Specific styles for home team column */
@@ -853,4 +753,72 @@ select {
   border-bottom: none; /* No bottom border on the last event */
 }
 
+.details-container {
+  width: 80%; /* Full width of the parent */
+  margin: 20px auto; /* Centering the container with space above/below */
+  padding: 20px; /* Padding inside the container */
+  border: 1px solid #ccc; /* Light border for the container */
+  border-radius: 10px; /* Rounded corners */
+  background-color: #ffffff; /* White background for readability */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+}
 
+.score-container {
+  width: 100%; /* Full width of the parent container */
+  text-align: center; /* Center the score text */
+  margin-bottom: 20px; /* Space below the score container */
+}
+
+.game-score {
+  font-size: 2em; /* Adjust font size for score */
+  font-weight: bold; /* Make the score bold */
+  color: #333; /* Darker text color for better visibility */
+}
+
+.formation {
+  text-align: center; /* Center the text in the formation div */
+  font-size: 1em;
+  color: #888;
+  margin-top: auto; /* Pushes the formation div to the bottom */
+  padding-top: 15px; /* Space above the formation message */
+}
+
+.no-formation-message {
+  font-size: 1.2em;
+  color: #888;
+  text-align: center;
+  margin-top: auto;
+}
+
+/* Add this to your CSS */
+.loading-spinner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner.hidden {
+  display: none;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f3f3f3;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

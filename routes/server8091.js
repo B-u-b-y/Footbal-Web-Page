@@ -56,9 +56,10 @@ router.get('/api/club_games/club/games/:club_id', async (req, res) => {
 router.get('/api/game_events/game/:game_id', async (req, res) => {
     const { game_id } = req.params;
     try {
-        // First, get all game events from the game_id
+        // First, get all game events for the game_id
         const response = await axios.get(`http://localhost:8091/api/game_events/game/${game_id}`);
         const gameEvents = response.data;
+
         // Process each game event
         const enrichedEvents = await Promise.all(gameEvents.map(async (event) => {
             try {
@@ -66,7 +67,7 @@ router.get('/api/game_events/game/:game_id', async (req, res) => {
                 const playerResponse = await axios.get(`http://localhost:8090/players/${event.player_id}`);
                 event.player_id = playerResponse.data.name;
 
-                if(event.player_in_id !== -1){
+                if (event.player_in_id !== -1) {
                     const response_in = await axios.get(`http://localhost:8090/players/${event.player_in_id}`);
                     event.player_in_id = response_in.data.name;
                 }
@@ -77,7 +78,7 @@ router.get('/api/game_events/game/:game_id', async (req, res) => {
 
                 // Get club information
                 const clubResponse = await axios.get(`http://localhost:8090/clubs/${event.club_id}`);
-                const clubName = clubResponse.data.name;
+                const clubName = clubResponse.data.name || 'Unknown'; // Default to "Unknown" if club name is missing
 
                 // Return an object with the desired fields
                 return {
@@ -106,6 +107,17 @@ router.get('/api/game_events/game/:game_id', async (req, res) => {
     } catch (error) {
         console.error("Error fetching game events:", error);
         res.status(500).send("An error occurred while fetching game events.");
+    }
+});
+
+router.get('/api/game_lineups/game/:game_id/:Team', async (req, res) => {
+    const { game_id, Team } = req.params;
+    try {
+        const response = await axios.get(`http://localhost:8091/api/game_lineups/game/${game_id}/${Team}`);
+        res.send(response.data);
+    } catch (error) {
+        console.error('Error during search request:', error);
+        res.status(500).json({ error: 'An error occurred during the search request.' });
     }
 });
 
