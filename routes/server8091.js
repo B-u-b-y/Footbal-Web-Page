@@ -121,4 +121,34 @@ router.get('/api/game_lineups/game/:game_id/:Team', async (req, res) => {
     }
 });
 
+router.get('/api/games/standings/:competition_id', async (req, res) => {
+    const { competition_id } = req.params;
+
+    try {
+        const response = await axios.get(`http://localhost:8091/api/games/standings/${competition_id}`);
+        if (response.data) {
+            res.send(response.data);
+        } else {
+            res.status(404).send('No data found');
+        }
+    } catch (error) {
+        console.error('Error during search request:', error);
+
+        // Check if the error response from Axios has specific details
+        if (error.response) {
+            // The request was made and the server responded with a status code
+            res.status(error.response.status).json({
+                error: error.response.data || 'An error occurred during the search request.',
+            });
+        } else if (error.request) {
+            // The request was made but no response was received
+            res.status(503).json({ error: 'No response received from the server.' });
+        } else {
+            // Something happened in setting up the request
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
+});
+
+
 module.exports = router;

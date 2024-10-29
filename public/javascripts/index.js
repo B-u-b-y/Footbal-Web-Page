@@ -63,11 +63,18 @@ function initializeSelects() {
     countrySelect.addEventListener('change', async function () {
         const selectedCountry = this.value;
 
+        clearStandingsCache();
+
         const starting_container = document.querySelector('.center-content');
         if (selectedCountry) {
             starting_container.style.display = 'none'; // Hide the news container
         } else {
             starting_container.style.display = 'block'; // Show the news container if no country is selected
+        }
+
+        const standingPrompt = document.getElementById('standing-prompt');
+        if(standingPrompt){
+            standingPrompt.style.display = 'none'; // Hide the standing prompt
         }
 
         // Clear dependent selects when country changes
@@ -104,9 +111,49 @@ function initializeSelects() {
         }
     });
 
+
     // Event handler for competition select (on change)
     competitionSelect.addEventListener('change', async function () {
         const selectedCompetition = this.value;
+
+        // Create the prompt div only if it hasn't been created yet
+        let standingPrompt = document.getElementById('standing-prompt');
+        if (!standingPrompt) {
+            standingPrompt = document.createElement('div');
+            standingPrompt.id = 'standing-prompt';
+            standingPrompt.classList.add('standing-prompt');
+
+            // Add text and arrow to the prompt
+            standingPrompt.innerHTML = `
+            <div class="standing-prompt-header">
+                <span>Want to see the standing?</span>
+                <span class="right-arrow">&#x25BC;</span> <!-- Down arrow -->
+            </div>
+            <div class="standings-container" style="display: none;"></div>`; // Standings container hidden by default
+
+            // Insert the standing prompt right after the inline-container
+            document.querySelector('.inline-container').insertAdjacentElement('afterend', standingPrompt);
+        } else {
+            standingPrompt.style.display = 'block'; // Show the standing prompt
+            standingPrompt.querySelector('.standings-container').innerHTML = ''; // Clear previous standings
+        }
+
+        // Ensure the click event listener is attached to the header
+        const header = standingPrompt.querySelector('.standing-prompt-header');
+        header.addEventListener('click', () => {
+            const standingsContainer = standingPrompt.querySelector('.standings-container');
+            const arrow = header.querySelector('.right-arrow');
+
+            // Toggle standings visibility
+            if (standingsContainer.style.display === 'none' || standingsContainer.style.display === '') {
+                standingsContainer.style.display = 'block'; // Show standings
+                arrow.innerHTML = '&#x25B2;'; // Change to up arrow
+                displayStandings(selectedCompetition); // Fetch and display standings
+            } else {
+                standingsContainer.style.display = 'none'; // Hide standings
+                arrow.innerHTML = '&#x25BC;'; // Change to down arrow
+            }
+        });
 
         // Clear club select and player select
         clubSelect.innerHTML = '<option value="">Select Club</option>';
@@ -123,6 +170,7 @@ function initializeSelects() {
             await fetchClubs(selectedCompetition);
         }
     });
+
 
     // Event handler for club select (on click)
     clubSelect.addEventListener('click', async function () {
@@ -714,6 +762,7 @@ async function displaySelectedGameDetails(gameContainer, homeTeam, awayTeam) {
         const scoreContainer = document.createElement('div'); // New score container
         scoreContainer.classList.add('score-container');
 
+        showLoadingSpinner();
         const homeColumn = createTeamEventsColumn(gameEvents, homeTeam);
         const awayColumn = createTeamEventsColumn(gameEvents, awayTeam);
 
@@ -732,6 +781,7 @@ async function displaySelectedGameDetails(gameContainer, homeTeam, awayTeam) {
 
         await displayFormation(gameContainer, homeColumn, awayColumn);
 
+        hideLoadingSpinner();
     } catch (error) {
         console.error('Error fetching game events:', error);
     }
@@ -844,3 +894,84 @@ function showLoadingSpinner() {
 function hideLoadingSpinner() {
     document.getElementById('loading-spinner').classList.add('hidden');
 }
+
+// Create a cache object to store fetched standings
+let standingsCache = {};
+
+function clearStandingsCache() {
+    standingsCache = {};
+}
+
+async function displayStandings(competition_id) {
+    try {
+        const cachedData = localStorage.getItem(`standings-${competition_id}`);
+        if (cachedData) {
+            console.log('Using cached standings data:', JSON.parse(cachedData));
+            renderStandings(JSON.parse(cachedData));
+            return; // Exit if we have cached data
+        }
+
+        showLoadingSpinner(); // Show loading spinner
+        const response = await axios.get(`/api/games/standings/${competition_id}`);
+        hideLoadingSpinner(); // Hide loading spinner
+
+        renderStandings(response.data);
+    } catch (error) {
+        hideLoadingSpinner(); // Ensure spinner is hidden
+        console.error('Error fetching standings:', error);
+
+        // Display an error message
+        const standingPrompt = document.getElementById('standing-prompt');
+        const standingsContainer = standingPrompt.querySelector('.standings-container');
+        standingsContainer.textContent = 'No standings found for this competition.';
+    }
+}
+
+// Function to render standings
+function renderStandings(standingsData) {
+    const standingPrompt = document.getElementById('standing-prompt'); // Get the standing prompt container
+    const standingsContainer = standingPrompt.querySelector('.standings-container'); // Get the standings container
+
+    standingsContainer.innerHTML = ''; // Clear existing standings if any
+
+    standingsData.forEach(round => {
+        // Create a div for each round
+        const roundDiv = document.createElement('div');
+        roundDiv.classList.add('round-container');
+
+        // Create a header for the round
+        const roundHeader = document.createElement('div');
+        roundHeader.classList.add('round-header');
+        roundHeader.innerHTML = `
+            <span>${round.round}</span> <!-- Correctly reference round.round -->
+            <span class="right-arrow">&#11208;</span>
+        `;
+
+        // Create a div to hold the teams for this round
+        const teamsDiv = document.createElement('div');
+        teamsDiv.classList.add('teams-container');
+        teamsDiv.style.display = 'none'; // Initially hide the teams
+
+        // Create a list of teams for this round
+        round.teams.forEach(team => {
+            const teamDiv = document.createElement('div');
+            teamDiv.classList.add('team-item'); // Add a class for individual teams
+            teamDiv.textContent = `${team.position}° ${team.name}`; // Display name and position
+            teamsDiv.appendChild(teamDiv); // Add the team div to the teams container
+        });
+
+        // Append the header and teams container to the round div
+        roundDiv.appendChild(roundHeader);
+        roundDiv.appendChild(teamsDiv);
+        standingsContainer.appendChild(roundDiv); // Add round div to the standings container
+
+        // Add click event to toggle teams visibility
+        roundHeader.addEventListener('click', () => {
+            teamsDiv.style.display = teamsDiv.style.display === 'none' ? 'block' : 'none';
+            // Change the arrow direction based on teams visibility
+            const arrow = roundHeader.querySelector('.right-arrow');
+            arrow.innerHTML = teamsDiv.style.display === 'none' ? '&#11208;' : '&#11205;'; // Down or Up arrow
+        });
+    });
+}
+
