@@ -1,96 +1,110 @@
+// Global variables to store the current competition ID and standings cache
+let currentCompetitionId = null;
+let standingsCache = {};
+
+// Event listener for DOMContentLoaded to initiate functions once the document is fully loaded
 document.addEventListener('DOMContentLoaded', async function () {
-    checkLoginStatus();
-    setupChatLink();
-    initializeSelects(); // Call the function to initialize select elements
+    checkLoginStatus(); // Check the current login status of the user
+    setupChatLink(); // Set up the chat link for starting a chat with a username
+    initializeSelects(); // Call the function to initialize dropdown/select elements
 });
 
+// Function to check the login status of the user
 function checkLoginStatus() {
-    const chatLink = document.querySelector('.active');
-    const login = document.querySelector('.login');
-    const username = sessionStorage.getItem('username');
-    const userNameDisplay = document.getElementById('user-name');
+    const chatLink = document.querySelector('.active'); // Get the chat link element
+    const login = document.querySelector('.login'); // Get the login link element
+    const username = sessionStorage.getItem('username'); // Retrieve username from session storage
+    const userNameDisplay = document.getElementById('user-name'); // Get the username display element
 
+    // If username exists in session storage, update UI to reflect the logged-in state
     if (username) {
-        chatLink.style.display = 'inline-block';
-        login.style.display = 'none';
-        userNameDisplay.textContent = `${username}`;
-        userNameDisplay.style.display = 'inline';
+        if (chatLink) chatLink.style.display = 'inline-block'; // Show chat link
+        if (login) login.style.display = 'none'; // Hide login link
+        userNameDisplay.textContent = username; // Display the username
+        userNameDisplay.style.display = 'inline'; // Show username in UI
     }
 }
 
+// Function to set up the chat link button click event
 function setupChatLink() {
     document.getElementById('start-chat-btn').addEventListener('click', () => {
-        const username = document.getElementById('username-input').value;
-        sessionStorage.setItem('username', username);
-        window.location.href = 'chat.html';
+        const username = document.getElementById('username-input').value; // Get username from input
+        sessionStorage.setItem('username', username); // Save username in session storage
+        window.location.href = 'chat.html'; // Redirect to chat page
     });
 }
 
-// Function to initialize select elements
+// Function to initialize select elements and populate them with data
 function initializeSelects() {
-    const countrySelect = document.getElementById('country-select');
-    const competitionSelect = document.getElementById('competition-select');
-    const clubSelect = document.getElementById('club-select');
-    const playerSelect = document.getElementById('player-select');
-    const clubInfoContainer = document.getElementById('club-info-container');
+    const countrySelect = document.getElementById('country-select'); // Select element for countries
+    const competitionSelect = document.getElementById('competition-select'); // Select element for competitions
+    const clubSelect = document.getElementById('club-select'); // Select element for clubs
+    const playerSelect = document.getElementById('player-select'); // Select element for players
+    const clubInfoContainer = document.getElementById('club-info-container'); // Container for club info
 
+    // Flags to check if data has already been loaded
     let countriesLoaded = false;
     let competitionsLoaded = false;
     let clubsLoaded = false;
     let playersLoaded = false;
 
-    // Initially disable all selects except the first one
+    // Disable all select elements except the first one initially
     competitionSelect.disabled = true;
     clubSelect.disabled = true;
-    playerSelect.disabled = true; // Disable player select initially
+    playerSelect.disabled = true;
 
     // Fetch countries when the country select is clicked (only once)
     countrySelect.addEventListener('click', async function () {
+        standingsCache = {}; // Clear the standings cache
+        currentCompetitionId = null; // Reset current competition ID
 
+        // Check if countries are already loaded
         if (!countriesLoaded) {
             try {
-                const response = await axios.get(`/server8090/competitions/country`);
-                displayOptions(countrySelect, response.data);
-                countriesLoaded = true;
+                const response = await axios.get(`/server8090/competitions/country`); // Fetch countries from API
+                displayOptions(countrySelect, response.data); // Populate country select with fetched data
+                countriesLoaded = true; // Set flag indicating countries have been loaded
             } catch (error) {
                 console.error('Error fetching countries:', error);
-                alert('Error fetching countries. Please try again later.');
+                alert('Error fetching countries. Please try again later.'); // Show error message to the user
             }
         }
     });
 
-    // Event handler for country select (on change)
+    // Event handler for when a country is selected
     countrySelect.addEventListener('change', async function () {
-        const selectedCountry = this.value;
+        const selectedCountry = this.value; // Get the currently selected country
 
-        clearStandingsCache();
+        standingsCache = {}; // Clear the standings cache
+        currentCompetitionId = null; // Reset current competition ID
 
-        const starting_container = document.querySelector('.center-content');
+        const standingPrompt = document.getElementById('standing-prompt'); // Get the standings prompt
+        if (standingPrompt) {
+            standingPrompt.style.display = 'none'; // Hide the standings prompt when changing country
+        }
+
+        // Show or hide news container based on country selection
+        const startingContainer = document.querySelector('.center-content');
         if (selectedCountry) {
-            starting_container.style.display = 'none'; // Hide the news container
+            startingContainer.style.display = 'none'; // Hide the news container
         } else {
-            starting_container.style.display = 'block'; // Show the news container if no country is selected
+            startingContainer.style.display = 'block'; // Show the news container if no country is selected
         }
 
-        const standingPrompt = document.getElementById('standing-prompt');
-        if(standingPrompt){
-            standingPrompt.style.display = 'none'; // Hide the standing prompt
-        }
-
-        // Clear dependent selects when country changes
+        // Reset options in dependent select elements
         competitionSelect.innerHTML = '<option value="">Select Competition</option>';
         clubSelect.innerHTML = '<option value="">Select Club</option>';
         playerSelect.innerHTML = '<option value="">Select Player</option>';
-        clubSelect.disabled = true;
-        playerSelect.disabled = true;
-        competitionSelect.disabled = !selectedCountry;
+        clubSelect.disabled = true; // Disable club select
+        playerSelect.disabled = true; // Disable player select
+        competitionSelect.disabled = !selectedCountry; // Enable competition select if a country is selected
 
-        // Reset loading flags
-        competitionsLoaded = false; // Reset to allow fetching again
-        clubsLoaded = false; // Reset to allow fetching again
-        playersLoaded = false; // Reset to allow fetching again
+        // Reset loading flags for competitions, clubs, and players
+        competitionsLoaded = false;
+        clubsLoaded = false;
+        playersLoaded = false;
 
-        // Fetch competitions for the selected country
+        // Fetch competitions based on the selected country
         if (selectedCountry) {
             await fetchCompetitions(selectedCountry);
         }
@@ -98,72 +112,69 @@ function initializeSelects() {
 
     // Event handler for competition select (on click)
     competitionSelect.addEventListener('click', async function () {
+        // Check if competitions have already been loaded
         if (!competitionsLoaded && countrySelect.value) {
-            const selectedCountry = countrySelect.value;
+            const selectedCountry = countrySelect.value; // Get the currently selected country
             try {
-                const response = await axios.get(`/server8090/${selectedCountry}/competitions`);
-                displayOptions(competitionSelect, response.data, 'competition_id', 'name');
-                competitionsLoaded = true;
+                const response = await axios.get(`/server8090/${selectedCountry}/competitions`); // Fetch competitions from API
+                displayOptions(competitionSelect, response.data, 'competition_id', 'name'); // Populate competitions select
+                competitionsLoaded = true; // Indicate that competitions are loaded
             } catch (error) {
                 console.error('Error fetching competitions:', error);
-                alert('Error fetching competitions. Please try again later.');
+                alert('Error fetching competitions. Please try again later.'); // Show error message
             }
         }
     });
 
-
     // Event handler for competition select (on change)
     competitionSelect.addEventListener('change', async function () {
-        const selectedCompetition = this.value;
+        const selectedCompetition = this.value; // Get the selected competition
 
-        // Create the prompt div only if it hasn't been created yet
-        let standingPrompt = document.getElementById('standing-prompt');
+        let standingPrompt = document.getElementById('standing-prompt'); // Get the standings prompt
         if (!standingPrompt) {
+            // Create standings prompt if it does not exist
             standingPrompt = document.createElement('div');
             standingPrompt.id = 'standing-prompt';
             standingPrompt.classList.add('standing-prompt');
-
-            // Add text and arrow to the prompt
             standingPrompt.innerHTML = `
-            <div class="standing-prompt-header">
-                <span>Want to see the standing?</span>
-                <span class="right-arrow">&#x25BC;</span> <!-- Down arrow -->
-            </div>
-            <div class="standings-container" style="display: none;"></div>`; // Standings container hidden by default
-
-            // Insert the standing prompt right after the inline-container
-            document.querySelector('.inline-container').insertAdjacentElement('afterend', standingPrompt);
+                <div class="standing-prompt-header">
+                    <span>Want to see the standing?</span>
+                    <span class="toggle-arrow">&#x25BC;</span>
+                </div>
+                <div class="standings-container" style="display: none;"></div>
+            `;
+            document.querySelector('.inline-container').insertAdjacentElement('afterend', standingPrompt); // Insert after inline-container
         } else {
-            standingPrompt.style.display = 'block'; // Show the standing prompt
+            standingPrompt.style.display = 'block'; // Show the standings prompt
             standingPrompt.querySelector('.standings-container').innerHTML = ''; // Clear previous standings
+            standingPrompt.querySelector('.standings-container').style.display = 'none'; // Hide the standings container
+            standingPrompt.querySelector('.toggle-arrow').innerHTML = '&#x25BC;'; // Reset arrow to down position
         }
 
-        // Ensure the click event listener is attached to the header
-        const header = standingPrompt.querySelector('.standing-prompt-header');
-        header.addEventListener('click', () => {
-            const standingsContainer = standingPrompt.querySelector('.standings-container');
-            const arrow = header.querySelector('.right-arrow');
-
-            // Toggle standings visibility
-            if (standingsContainer.style.display === 'none' || standingsContainer.style.display === '') {
-                standingsContainer.style.display = 'block'; // Show standings
-                arrow.innerHTML = '&#x25B2;'; // Change to up arrow
-                displayStandings(selectedCompetition); // Fetch and display standings
-            } else {
-                standingsContainer.style.display = 'none'; // Hide standings
-                arrow.innerHTML = '&#x25BC;'; // Change to down arrow
-            }
-        });
-
-        // Clear club select and player select
+        // Clear and update club and player selects based on competition selection
         clubSelect.innerHTML = '<option value="">Select Club</option>';
         playerSelect.innerHTML = '<option value="">Select Player</option>';
-        clubSelect.disabled = !selectedCompetition;
-        playerSelect.disabled = true;
+        clubSelect.disabled = !selectedCompetition; // Enable for valid selection
+        playerSelect.disabled = true; // Disable player select initially
 
-        clubInfoContainer.style.display = 'none'; // Hide the club info container
-        // Reset loading flags
-        clubsLoaded = false; // Reset to allow fetching again
+        // Hide club info container initially
+        clubInfoContainer.style.display = 'none';
+        clubsLoaded = false; // Reset loading flags for clubs
+
+        // Toggle standings visibility
+        standingPrompt.querySelector('.toggle-arrow').onclick = async function () {
+            const standingsContainer = standingPrompt.querySelector('.standings-container');
+            if (standingsContainer.style.display === 'none') {
+                standingsContainer.style.display = 'block'; // Show standings container
+                await displayStandings(selectedCompetition); // Fetch and display standings
+                this.innerHTML = '&#x25B2;'; // Change arrow to up
+            } else {
+                standingsContainer.style.display = 'none'; // Hide standings container
+                standingsCache = {}; // Clear the standings cache
+                currentCompetitionId = null; // Reset current competition ID
+                this.innerHTML = '&#x25BC;'; // Change arrow to down
+            }
+        };
 
         // Fetch clubs for the selected competition
         if (selectedCompetition) {
@@ -171,166 +182,166 @@ function initializeSelects() {
         }
     });
 
-
     // Event handler for club select (on click)
     clubSelect.addEventListener('click', async function () {
-        if (!clubsLoaded && competitionSelect.value) {
-            const selectedCompetition = competitionSelect.value;
+        if (!clubsLoaded && competitionSelect.value) { // Load clubs if not already loaded
+            const selectedCompetition = competitionSelect.value; // Get the selected competition
             try {
-                const response = await axios.get(`/server8090/${selectedCompetition}/clubs`);
-                if(response.data && response.data.length > 0) {
-                    displayOptions(clubSelect, response.data, 'club_id', 'name');
-                    clubsLoaded = true;
+                const response = await axios.get(`/server8090/${selectedCompetition}/clubs`); // Fetch clubs from API
+                if (response.data && response.data.length > 0) {
+                    displayOptions(clubSelect, response.data, 'club_id', 'name'); // Populate clubs select
+                    clubsLoaded = true; // Mark clubs as loaded
                 } else {
-                    const response = await axios.get(`/server8091/api/games/competition/${selectedCompetition}`);
-                    if(response.data && response.data.length > 0) {
-                        const cardContainer = document.getElementById('card-container');
+                    // If no clubs, fallback to fetching games
+                    const gamesResponse = await axios.get(`/server8091/api/games/competition/${selectedCompetition}`);
+                    if (gamesResponse.data && gamesResponse.data.length > 0) {
+                        const cardContainer = document.getElementById('card-container'); // Get the container for cards
                         cardContainer.innerHTML = ''; // Clear existing cards
-                        response.data.forEach(game => {
-                            const matchDetailsRow = createMatchDetailsRow(game);
-                            cardContainer.appendChild(matchDetailsRow); // Append rows directly to cardContainer
+                        gamesResponse.data.forEach(game => {
+                            const matchDetailsRow = createMatchDetailsRow(game); // Create match row for each game
+                            cardContainer.appendChild(matchDetailsRow); // Append rows to card container
                         });
-                        cardContainer.style.display = 'flex';
+                        cardContainer.style.display = 'flex'; // Display card container
                         cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
                         cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
                     }
                 }
             } catch (error) {
                 console.error('Error fetching clubs:', error);
-                alert('Error fetching clubs. Please try again later.');
+                alert('Error fetching clubs. Please try again later.'); // Show error message
             }
         }
     });
 
     // Event handler for club select (on change)
     clubSelect.addEventListener('change', async function () {
-        const selectedClub = this.value;
-        playerSelect.innerHTML = '<option value="">Select Player</option>';
-        playerSelect.disabled = true;
+        const standingPrompt = document.getElementById('standing-prompt');
+        if (standingPrompt) {
+            standingPrompt.style.display = 'none'; // Hide the standing prompt
+        }
+        const selectedClub = this.value; // Get the selected club
+        playerSelect.innerHTML = '<option value="">Select Player</option>'; // Reset player select options
+        playerSelect.disabled = true; // Disable player select
 
-        // Reset loading flag
-        playersLoaded = false; // Reset to allow fetching again
         // Fetch players for the selected club
         if (selectedClub) {
-            await fetchPlayers(selectedClub);
+            await fetchPlayers(selectedClub); // Fetch players
         }
     });
 
     // Event handler for player select (on click)
     playerSelect.addEventListener('click', async function () {
         if (!playersLoaded && clubSelect.value) {
-            const selectedClub = clubSelect.value;
+            const selectedClub = clubSelect.value; // Get selected club
             try {
-                const response = await axios.get(`/server8090/${selectedClub}/players`);
-                displayOptions(playerSelect, response.data, 'player_id', 'name');
-                playersLoaded = true;
+                const response = await axios.get(`/server8090/${selectedClub}/players`); // Fetch players from API
+                displayOptions(playerSelect, response.data, 'player_id', 'name'); // Populate player select
+                playersLoaded = true; // Mark players as loaded
             } catch (error) {
                 console.error('Error fetching players:', error);
-                alert('Error fetching players. Please try again later.');
+                alert('Error fetching players. Please try again later.'); // Show error message
             }
         }
     });
 
     // Event handler for player select (on change)
     playerSelect.addEventListener('change', async function () {
-        const details_container = document.querySelector('.details-container');
-        if(details_container){
-            details_container.style.display = 'none';
+        const detailsContainer = document.querySelector('.details-container'); // Get the details container
+        if (detailsContainer) {
+            detailsContainer.style.display = 'none'; // Hide details
         }
 
-        const selectedPlayer = this.value;
-
-        // Clear existing cards in card-container
-        const cardContainer = document.getElementById('card-container');
+        const selectedPlayer = this.value; // Get the selected player
+        const cardContainer = document.getElementById('card-container'); // Get the card container
         cardContainer.innerHTML = ''; // Clear existing cards
-        clubInfoContainer.style.display = 'none'; // Hide the club info container
+        clubInfoContainer.style.display = 'none'; // Hide club info container
 
         // Fetch and display the selected player as a card
         if (selectedPlayer) {
-            await fetchPlayer(selectedPlayer);
+            await fetchPlayer(selectedPlayer); // Fetch player details
         }
     });
 
-    // Fetch competitions for the selected country
+    // Function to fetch competitions based on the selected country
     async function fetchCompetitions(country) {
         try {
-            const response = await axios.get(`/server8090/${country}/competitions`);
-            displayCompetitionsAsCards(response.data);
+            const response = await axios.get(`/server8090/${country}/competitions`); // Fetch competitions from API
+            displayCompetitionsAsCards(response.data); // Display competitions as cards
         } catch (error) {
             console.error('Error fetching competitions:', error);
-            alert('Error fetching competitions. Please try again later.');
+            alert('Error fetching competitions. Please try again later.'); // Show error message
         }
     }
 
-    // Fetch clubs for the selected competition
+    // Function to fetch clubs based on the selected competition
     async function fetchClubs(competition) {
         try {
-            const response = await axios.get(`/server8090/${competition}/clubs`);
+            const response = await axios.get(`/server8090/${competition}/clubs`); // Fetch clubs from API
             if (response.data && response.data.length > 0) {
-                displayClubsAsCards(response.data);
-            }else{
+                displayClubsAsCards(response.data); // Display clubs as cards
+            } else {
+                // If no clubs found, fallback to fetching games
                 const response = await axios.get(`/server8091/api/games/competition/${competition}`);
-                if(response.data && response.data.length > 0) {
-                    const clubSelect = document.getElementById('club-select');
-                    clubSelect.disabled = true;
-                    const cardContainer = document.getElementById('card-container');
+                if (response.data && response.data.length > 0) {
+                    const clubSelect = document.getElementById('club-select'); // Get the club select element
+                    clubSelect.disabled = true; // Disable the club select
+                    const cardContainer = document.getElementById('card-container'); // Get card container
                     cardContainer.innerHTML = ''; // Clear existing cards
                     response.data.forEach(game => {
-                        const matchDetailsRow = createMatchDetailsRow(game);
-                        cardContainer.appendChild(matchDetailsRow); // Append rows directly to cardContainer
+                        const matchDetailsRow = createMatchDetailsRow(game); // Create match row for each game
+                        cardContainer.appendChild(matchDetailsRow); // Append rows to card container
                     });
-                    cardContainer.style.display = 'flex';
+                    cardContainer.style.display = 'flex'; // Display card container
                     cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
                     cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
                 }
             }
         } catch (error) {
             console.error('Error fetching clubs:', error);
-            alert('Error fetching clubs. Please try again later.');
+            alert('Error fetching clubs. Please try again later.'); // Show error message
         }
     }
 
-    // Fetch players for the selected club
+    // Function to fetch players based on the selected club
     async function fetchPlayers(club) {
         try {
-            const clubResponse = await axios.get(`/server8090/clubs/${club}`);
-            displayClubInfo(clubResponse.data);
+            const clubResponse = await axios.get(`/server8090/clubs/${club}`); // Fetch club info from API
+            displayClubInfo(clubResponse.data); // Display club info
 
-            const response = await axios.get(`/server8090/${club}/players`);
-            displayPlayersAsCards(response.data);
-
+            const response = await axios.get(`/server8090/${club}/players`); // Fetch players from API
+            displayPlayersAsCards(response.data); // Display players as cards
             playerSelect.disabled = false; // Enable player select
         } catch (error) {
             console.error('Error fetching players:', error);
-            alert('Error fetching players. Please try again later.');
+            alert('Error fetching players. Please try again later.'); // Show error message
         }
     }
 
-    // Fetch player details based on selected player ID
+    // Function to fetch player details based on the selected player ID
     async function fetchPlayer(playerId) {
         try {
-            const response = await axios.get(`/server8090/players/${playerId}`);
-            displayPlayerAsCard(response.data);
+            const response = await axios.get(`/server8090/players/${playerId}`); // Fetch player details from API
+            displayPlayerAsCard(response.data); // Display player details
         } catch (error) {
             console.error('Error fetching player details:', error);
-            alert('Error fetching player details. Please try again later.');
+            alert('Error fetching player details. Please try again later.'); // Show error message
         }
     }
 }
 
 // Function to create and display competition cards
 function displayCompetitionsAsCards(competitions) {
-    const cardContainer = document.getElementById('card-container');
+    const cardContainer = document.getElementById('card-container'); // Get the card container
     cardContainer.innerHTML = ''; // Clear existing cards
 
-    const details_container = document.querySelector('.details-container');
-    if(details_container){
-        details_container.style.display = 'none';
+    const detailsContainer = document.querySelector('.details-container'); // Get the details container
+    if (detailsContainer) {
+        detailsContainer.style.display = 'none'; // Hide details container if present
     }
 
     competitions.forEach(competition => {
-        const card = document.createElement('div');
-        card.classList.add('card');
+        const card = document.createElement('div'); // Create a new card element
+        card.classList.add('card'); // Add the card class
 
         // Create card content
         card.innerHTML = `
@@ -342,23 +353,22 @@ function displayCompetitionsAsCards(competitions) {
         cardContainer.appendChild(card); // Append the card to the container
     });
 
-    const club_info_container = document.getElementById('club-info-container');
-    club_info_container.style.display = 'none'; // Hide the club info container
+    const clubInfoContainer = document.getElementById('club-info-container'); // Get the club info container
+    clubInfoContainer.style.display = 'none'; // Hide the club info container
 
-    // Ensure cardContainer is displayed as flex and adjusts accordingly
-    cardContainer.style.display = 'flex';
+    cardContainer.style.display = 'flex'; // Display card container
     cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
     cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
 }
 
 // Function to create and display club cards
 function displayClubsAsCards(clubs) {
-    const cardContainer = document.getElementById('card-container');
+    const cardContainer = document.getElementById('card-container'); // Get the card container
     cardContainer.innerHTML = ''; // Clear existing cards
 
     clubs.forEach(club => {
-        const card = document.createElement('div');
-        card.classList.add('card');
+        const card = document.createElement('div'); // Create a new card element
+        card.classList.add('card'); // Add the card class
 
         // Create card content
         card.innerHTML = `
@@ -372,22 +382,22 @@ function displayClubsAsCards(clubs) {
         cardContainer.appendChild(card); // Append the card to the container
     });
 
-    const club_info_container = document.getElementById('club-info-container');
-    club_info_container.style.display = 'none'; // Hide the club info container
+    const clubInfoContainer = document.getElementById('club-info-container'); // Get the club info container
+    clubInfoContainer.style.display = 'none'; // Hide the club info container
 
-    cardContainer.style.display = 'flex';
+    cardContainer.style.display = 'flex'; // Display card container
     cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
     cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
 }
 
 // Function to create and display player cards
 function displayPlayersAsCards(players) {
-    const cardContainer = document.getElementById('card-container');
+    const cardContainer = document.getElementById('card-container'); // Get the card container
     cardContainer.innerHTML = ''; // Clear existing cards
 
     players.forEach(player => {
-        const card = document.createElement('div');
-        card.classList.add('player_card');
+        const card = document.createElement('div'); // Create a new card element
+        card.classList.add('player_card'); // Add the player_card class
 
         // Create card content
         card.innerHTML = `
@@ -403,19 +413,18 @@ function displayPlayersAsCards(players) {
         cardContainer.appendChild(card); // Append the card to the container
     });
 
-    // Ensure cards are displayed correctly with CSS
-    cardContainer.style.display = 'flex';
+    cardContainer.style.display = 'flex'; // Display card container
     cardContainer.style.flexDirection = 'row'; // Arrange cards in a row
     cardContainer.style.flexWrap = 'wrap'; // Allow wrapping for cards
 }
 
 // Function to display player details as a card
 function displayPlayerAsCard(player) {
-    const cardContainer = document.getElementById('card-container');
-    cardContainer.innerHTML = '';
+    const cardContainer = document.getElementById('card-container'); // Get the card container
+    cardContainer.innerHTML = ''; // Clear existing cards
 
-    const card = document.createElement('div');
-    card.classList.add('player-card-container');
+    const card = document.createElement('div'); // Create a new card element
+    card.classList.add('player-card-container'); // Add the player-card-container class
 
     card.innerHTML = `
         <img src="${player.image_url || '../images/default.png'}" alt="${player.name}" class="player-image">
@@ -439,52 +448,51 @@ function displayPlayerAsCard(player) {
         </div>
     `;
 
-    cardContainer.appendChild(card);
+    cardContainer.appendChild(card); // Append the card to the container
 
-    const showMoreBtn = card.querySelector('.show-more-btn');
-    const arrowIcon = showMoreBtn.querySelector('.arrow');
-    const moreInfoDiv = card.querySelector('.more-info');
+    const showMoreBtn = card.querySelector('.show-more-btn'); // Get the show more button
+    const arrowIcon = showMoreBtn.querySelector('.arrow'); // Get the arrow icon
+    const moreInfoDiv = card.querySelector('.more-info'); // Get the more info div
 
+    // Event handler for the show more button
     showMoreBtn.addEventListener('click', async function() {
         if (moreInfoDiv.style.display === 'none') {
             try {
-                showLoadingSpinner();
-                const response = await axios.get(`/server8091/api/appearances/appearances/games/${player.player_id}`);
-                hideLoadingSpinner();
-                if(response.data && response.data.length > 0) {
-                    // Loop through each appearance and append the row to moreInfoDiv
+                showLoadingSpinner(); // Show loading spinner
+                const response = await axios.get(`/server8091/api/appearances/appearances/games/${player.player_id}`); // Fetch player appearances
+                hideLoadingSpinner(); // Hide loading spinner
+                if (response.data && response.data.length > 0) {
                     response.data.forEach(appearance => {
-                        const appearanceRow = createAppearanceRow(appearance);
-                        moreInfoDiv.appendChild(appearanceRow); // Append rows directly to moreInfoDiv
+                        const appearanceRow = createAppearanceRow(appearance); // Create appearance row for each game
+                        moreInfoDiv.appendChild(appearanceRow); // Append rows to more info div
                     });
-                }else{
+                } else {
                     const noAppearances = document.createElement('p');
                     noAppearances.textContent = 'No info found for this player.';
-                    moreInfoDiv.appendChild(noAppearances);
+                    moreInfoDiv.appendChild(noAppearances); // Add message if no info found
                 }
 
-                moreInfoDiv.style.display = 'block';
-                arrowIcon.innerHTML = '&#x25B2;'; // Change to up arrow (▲)
-                showMoreBtn.querySelector('.tooltip').textContent = 'Show less info';
+                moreInfoDiv.style.display = 'block'; // Show more info
+                arrowIcon.innerHTML = '&#x25B2;'; // Change arrow to up arrow (▲)
+                showMoreBtn.querySelector('.tooltip').textContent = 'Show less info'; // Update tooltip
             } catch (error) {
                 console.error('Error fetching appearance details:', error);
-                alert('Error fetching appearance details. Please try again later.');
+                alert('Error fetching appearance details. Please try again later.'); // Show error message
             }
         } else {
-            moreInfoDiv.style.display = 'none';
-            arrowIcon.innerHTML = '&#x25BC;'; // Change back to down arrow (▼)
-            showMoreBtn.querySelector('.tooltip').textContent = 'Show more info';
+            moreInfoDiv.style.display = 'none'; // Hide more info
+            arrowIcon.innerHTML = '&#x25BC;'; // Change arrow back to down arrow (▼)
+            showMoreBtn.querySelector('.tooltip').textContent = 'Show more info'; // Update tooltip
         }
     });
 }
 
 // Function to display appearance data in the specified layout
 function createAppearanceRow(appearance) {
-    // Create a container div for the appearance row
-    const appearanceRow = document.createElement('div');
-    appearanceRow.classList.add('appearance-row');
+    const appearanceRow = document.createElement('div'); // Create appearance row
+    appearanceRow.classList.add('appearance-row'); // Add class for styling
 
-    // Create and append elements in the specified order
+    // Fill appearance row with data
     appearanceRow.innerHTML = `
     <div class="appearance-header">
         <div class="top-left">Competition type:
@@ -515,33 +523,29 @@ function createAppearanceRow(appearance) {
         <p><strong>Minutes played: </strong>${appearance.minutes_played || 'N/A'}</p>
     </div>
 `;
-    return appearanceRow;
+    return appearanceRow; // Return the constructed appearance row
 }
 
-
+// Function to display club information
 function displayClubInfo(club) {
-    const clubInfoContainer = document.getElementById('club-info-container');
+    const clubInfoContainer = document.getElementById('club-info-container'); // Get the club info container
+    if (!clubInfoContainer) return; // Ensure that the container exists
 
-    // Clear any previous content
-    clubInfoContainer.innerHTML = '';
+    clubInfoContainer.innerHTML = ''; // Clear previous content
 
-    // Insert the club info into the new container with a Show More button
+    // Add club info to the container
     clubInfoContainer.innerHTML = `
     <div class="club-card">
         <h3 class="club-name">${club.name}</h3>
-        
         <div class="info-row">
             <p class="average-age">Average age: <strong>${club.average_age || 'N/A'}</strong></p>
             <p class="net-transfer">Net transfer record: <strong>${club.net_transfer_record || 'N/A'}</strong></p>
         </div>
-        
         <div class="additional-info">
             <p class="last-season">Last season: <strong>${club.last_season || 'Unknown'}</strong></p>
             <p class="stadium">Stadium: <strong>${club.stadium_name || 'Unknown'}</strong></p>
         </div>
-
         <div class="more-info" style="display: none; margin-top: 10px;"></div>
-
         <button class="show-more-btn">
             <span class="tooltip">Show more info</span>
             <span class="arrow">&#x25BC;</span>
@@ -549,78 +553,68 @@ function displayClubInfo(club) {
     </div>
     `;
 
-    // Add event listener for Show More button
-    const showMoreBtn = clubInfoContainer.querySelector('.show-more-btn');
-    const arrowIcon = showMoreBtn.querySelector('.arrow');
-    const moreInfoDiv = clubInfoContainer.querySelector('.more-info');
+    const showMoreBtn = clubInfoContainer.querySelector('.show-more-btn'); // Get the show more button
+    const arrowIcon = showMoreBtn.querySelector('.arrow'); // Get the arrow icon
+    const moreInfoDiv = clubInfoContainer.querySelector('.more-info'); // Get the more info div
 
+    // Event handler for the show more button
     showMoreBtn.addEventListener('click', async function() {
         if (moreInfoDiv.style.display === 'none') {
-            try{
-                showLoadingSpinner();
-                const response = await axios.get(`/server8091/api/club_games/club/games/${club.club_id}`);
-                if(response.data && response.data.length > 0) {
-                    // Loop through each appearance and append the row to moreInfoDiv
+            try {
+                showLoadingSpinner(); // Show loading spinner
+                const response = await axios.get(`/server8091/api/club_games/club/games/${club.club_id}`); // Fetch club games
+                if (response.data && response.data.length > 0) {
                     for (const appearance of response.data) {
-                        const opponent = await axios.get(`/server8090/clubs/${appearance.opponent_id}`);
-                        if(!opponent.data) {
-                            opponent.data = 'unknown';
-                        }
-                        const games = displayClubGames(appearance, opponent.data, club.name);
-                        moreInfoDiv.appendChild(games); // Append rows directly to moreInfoDiv
+                        const opponent = await axios.get(`/server8090/clubs/${appearance.opponent_id}`); // Fetch opponent info
+                        const games = displayClubGames(appearance, opponent.data || { name: 'unknown' }, club.name); // Display games
+                        moreInfoDiv.appendChild(games); // Append games to more info div
                     }
-                }else{
+                } else {
                     const noAppearances = document.createElement('p');
                     noAppearances.textContent = 'No info found for this club.';
-                    moreInfoDiv.appendChild(noAppearances);
+                    moreInfoDiv.appendChild(noAppearances); // Add message if no info found
                 }
-                hideLoadingSpinner();
-            }catch (error){
+                hideLoadingSpinner(); // Hide loading spinner
+            } catch (error) {
                 console.error('Error fetching appearance details:', error);
-                alert('Error fetching appearance details. Please try again later.');
+                alert('Error fetching appearance details. Please try again later.'); // Show error message
             }
-            moreInfoDiv.style.display = 'block';
+            moreInfoDiv.style.display = 'block'; // Show more info
             arrowIcon.innerHTML = '&#x25B2;'; // Change to up arrow (▲)
-            showMoreBtn.querySelector('.tooltip').textContent = 'Show less info';
+            showMoreBtn.querySelector('.tooltip').textContent = 'Show less info'; // Update tooltip
         } else {
-            moreInfoDiv.style.display = 'none';
+            moreInfoDiv.style.display = 'none'; // Hide more info
             arrowIcon.innerHTML = '&#x25BC;'; // Change back to down arrow (▼)
-            showMoreBtn.querySelector('.tooltip').textContent = 'Show more info';
+            showMoreBtn.querySelector('.tooltip').textContent = 'Show more info'; // Update tooltip
         }
     });
 
-    clubInfoContainer.style.display = 'block';
+    clubInfoContainer.style.display = 'block'; // Show club info container
 }
 
 // Function to display options in a select element
 function displayOptions(selectElement, options, valueKey, textKey) {
     selectElement.innerHTML = ''; // Clear existing options
 
-    // Add the default "Select" option
-    const defaultOption = document.createElement('option');
+    const defaultOption = document.createElement('option'); // Create default option
     defaultOption.value = '';
-    defaultOption.textContent = `Select ${selectElement.id.replace('-select', '')}`;
-    selectElement.appendChild(defaultOption);
+    defaultOption.textContent = `Select ${selectElement.id.replace('-select', '')}`; // Set default option text
+    selectElement.appendChild(defaultOption); // Append default option to select
 
+    // Populate select with provided options
     options.forEach(option => {
-        const optionElement = document.createElement('option');
-        if (valueKey === undefined && textKey === undefined) {
-            optionElement.value = option;
-            optionElement.textContent = option;
-        } else {
-            optionElement.value = option[valueKey];
-            optionElement.textContent = option[textKey];
-        }
-        selectElement.appendChild(optionElement);
+        const optionElement = document.createElement('option'); // Create option element
+        optionElement.value = option[valueKey] || option; // Set value for the option
+        optionElement.textContent = option[textKey] || option; // Set display text for the option
+        selectElement.appendChild(optionElement); // Append option to select
     });
 }
 
+// Function to create and display match details
 function createMatchDetailsRow(match) {
-    // Create a container div for the match details
-    const matchRow = document.createElement('div');
-    matchRow.classList.add('match-row');
+    const matchRow = document.createElement('div'); // Create match details row
+    matchRow.classList.add('match-row'); // Add class for styling
 
-    // Structure the match data into HTML format
     matchRow.innerHTML = `
         <div class="match-header">
             <div class="top-left">
@@ -656,28 +650,18 @@ function createMatchDetailsRow(match) {
             <p><strong>Referee: </strong>${match.referee || 'N/A'}</p>
         </div>
     `;
-
-    return matchRow;
+    return matchRow; // Return the created match row
 }
 
+// Function to display club games
 function displayClubGames(game, opponent, clubName) {
-    const gameContainer = document.createElement('div');
-    gameContainer.classList.add('game-container');
+    const gameContainer = document.createElement('div'); // Create a container for the game
+    gameContainer.classList.add('game-container'); // Add class for styling
 
-    // Add data attributes for team IDs
-    gameContainer.dataset.homeTeamId = game.club_id;
+    gameContainer.dataset.homeTeamId = game.club_id; // Set home team ID
+    gameContainer.dataset.awayTeamId = opponent.name ? game.opponent_id : 'unknown'; // Set away team ID
+    gameContainer.dataset.gameId = game.game_id; // Set game ID
 
-    // Check if opponent is undefined or 'unknown'
-    if (opponent === undefined || opponent === 'unknown') {
-        gameContainer.dataset.awayTeamId = 'unknown';
-        opponent = { name: 'unknown' }; // Assign an object to opponent with name property
-    } else {
-        gameContainer.dataset.awayTeamId = game.opponent_id; // Use the actual opponent ID
-    }
-
-    gameContainer.dataset.gameId = game.game_id;
-
-    // HTML structure for game details
     gameContainer.innerHTML += `  
     <div class="game-header">
         <div class="team-left">
@@ -703,142 +687,140 @@ function displayClubGames(game, opponent, clubName) {
     </div>
     `;
 
-    // Add click event to display selected game details
+    // Event handler for displaying selected game details
     gameContainer.addEventListener('click', (event) => {
-        event.stopPropagation();  // Prevent click from bubbling up
-        displaySelectedGameDetails(game, opponent, clubName);
+        event.stopPropagation();  // Prevent click from bubbling up to parent elements
+        displaySelectedGameDetails(game, opponent, clubName); // Display details for the selected game
     });
 
-    // Add click event for the arrow to show game details
+    // Event handler for showing more game details
     gameContainer.querySelector('.right-arrow').addEventListener('click', (event) => {
-        const player_select = document.querySelector('#player-select');
-        player_select.disabled = true;
+        const playerSelect = document.querySelector('#player-select');
+        playerSelect.disabled = true; // Disable player select
         event.stopPropagation(); // Prevent triggering the gameContainer click
-        hideContent(clubName, opponent.name, gameContainer);
+        hideContent(clubName, opponent.name, gameContainer); // Hide other content and show game details
     });
 
-    return gameContainer;
+    return gameContainer; // Return the created game container
 }
 
-
-// Function to hide content except topnav and inline-container
+// Function to hide other content when a game is selected
 function hideContent(homeTeam, awayTeam, gameContainer) {
-    const centerContent = document.querySelector('.center-content');
-    const clubInfoContainer = document.getElementById('club-info-container');
-    const cardContainer = document.getElementById('card-container');
-    const appearancesContainer = document.getElementById('appearancesContainer');
+    const centerContent = document.querySelector('.center-content'); // Get the center content element
+    const clubInfoContainer = document.getElementById('club-info-container'); // Get club info container
+    const cardContainer = document.getElementById('card-container'); // Get card container
+    const appearancesContainer = document.getElementById('appearancesContainer'); // Get appearances container
 
-    centerContent.style.display = 'none';
-    clubInfoContainer.style.display = 'none';
-    cardContainer.style.display = 'none';
-    appearancesContainer.style.display = 'none';
+    centerContent.style.display = 'none'; // Hide center content
+    clubInfoContainer.style.display = 'none'; // Hide club info
+    cardContainer.style.display = 'none'; // Hide card container
+    appearancesContainer.style.display = 'none'; // Hide appearances container
 
-    displaySelectedGameDetails(gameContainer, homeTeam, awayTeam);
+    displaySelectedGameDetails(gameContainer, homeTeam, awayTeam); // Show selected game details
 }
 
+// Async function to display selected game details
 async function displaySelectedGameDetails(gameContainer, homeTeam, awayTeam) {
-    const gameID = gameContainer.dataset.gameId;
-
-    // Access the score-center div
-    const scoreCenterDiv = gameContainer.querySelector('.score-center');
-    const scoreContent = scoreCenterDiv.textContent;
+    const gameID = gameContainer.dataset.gameId; // Get the game ID
+    const scoreCenterDiv = gameContainer.querySelector('.score-center'); // Get score center div
+    const scoreContent = scoreCenterDiv.textContent; // Get score content
 
     try {
-        const response = await axios.get(`/server8091/api/game_events/game/${gameID}`);
-        const gameEvents = response.data;
+        showLoadingSpinner(); // Show loading spinner
 
-        // Check if a details container already exists
-        const existingDetailsContainer = document.querySelector('.details-container');
+        const response = await axios.get(`/server8091/api/game_events/game/${gameID}`); // Fetch game events
+        const gameEvents = response.data; // Get game events data
+
+        const existingDetailsContainer = document.querySelector('.details-container'); // Check for existing detail containers
         if (existingDetailsContainer) {
-            existingDetailsContainer.remove();
+            existingDetailsContainer.remove(); // Remove existing details if present
         }
 
-        const detailsContainer = document.createElement('div');
+        const detailsContainer = document.createElement('div'); // Create a new details container
         detailsContainer.classList.add('details-container');
 
-        const container = document.createElement('div');
+        const container = document.createElement('div'); // Create a container for game details
         container.classList.add('game-details-container');
 
-        const scoreContainer = document.createElement('div'); // New score container
+        const scoreContainer = document.createElement('div'); // Create a score container
         scoreContainer.classList.add('score-container');
 
-        showLoadingSpinner();
-        const homeColumn = createTeamEventsColumn(gameEvents, homeTeam);
-        const awayColumn = createTeamEventsColumn(gameEvents, awayTeam);
+        const homeColumn = createTeamEventsColumn(gameEvents, homeTeam); // Create home team events column
+        const awayColumn = createTeamEventsColumn(gameEvents, awayTeam); // Create away team events column
 
-        container.appendChild(homeColumn);
-        container.appendChild(awayColumn);
+        container.appendChild(homeColumn); // Append home column to details container
+        container.appendChild(awayColumn); // Append away column to details container
 
-        const scoreDiv = document.createElement('div');
+        const scoreDiv = document.createElement('div'); // Create a div for displaying score
         scoreDiv.classList.add('game-score');
-        scoreDiv.textContent = scoreContent;
+        scoreDiv.textContent = scoreContent; // Set text for score div
 
-        scoreContainer.appendChild(scoreDiv); // Append scoreDiv to scoreContainer
-        detailsContainer.appendChild(scoreContainer); // Append scoreContainer to detailsContainer
-        detailsContainer.appendChild(container);
+        scoreContainer.appendChild(scoreDiv); // Append score div to score container
+        detailsContainer.appendChild(scoreContainer); // Append score container to details container
+        detailsContainer.appendChild(container); // Append complete game details to overall container
 
-        document.body.appendChild(detailsContainer);
+        document.body.appendChild(detailsContainer); // Append details to body
 
-        await displayFormation(gameContainer, homeColumn, awayColumn);
+        await displayFormation(gameContainer, homeColumn, awayColumn); // Display formations for teams
 
-        hideLoadingSpinner();
+        hideLoadingSpinner(); // Hide loading spinner
     } catch (error) {
         console.error('Error fetching game events:', error);
     }
 }
 
+// Function to create a column for team events in the game
 function createTeamEventsColumn(gameEvents, teamName) {
-    const teamColumn = document.createElement('div');
-    teamColumn.classList.add('team-column');
+    const teamColumn = document.createElement('div'); // Create a column for the team
+    teamColumn.classList.add('team-column'); // Add class for styling
 
-    const teamHeading = document.createElement('h2');
-    teamHeading.textContent = teamName;
-    teamColumn.appendChild(teamHeading);
+    const teamHeading = document.createElement('h2'); // Create a heading for the team
+    teamHeading.textContent = teamName; // Set the team name as heading
+    teamColumn.appendChild(teamHeading); // Append heading to the team column
 
-    // Defensive check for gameEvents
+    // Defensive check for game events
     if (!Array.isArray(gameEvents)) {
         console.error('gameEvents is not an array:', gameEvents);
-        return teamColumn; // or handle as needed
+        return teamColumn; // Return empty column if gameEvents is not an array
     }
 
     gameEvents.forEach(event => {
         // Check for event.club_name
         if (event.club_name && event.club_name.toLowerCase() === teamName.toLowerCase()) {
-            const eventElement = document.createElement('p');
-
+            const eventElement = document.createElement('p'); // Create element for the event
             // Handling different event types
             if (event.type === 'Goals') {
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;⚽ Goal: <strong>${event.player_name}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
             } else if (event.type === 'Substitutions') {
-                eventElement.classList.add('substitution-event');
+                eventElement.classList.add('substitution-event'); // Add class for substitution events
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;🔄 Substitution: <strong>${event.player_name}</strong> substituted by <strong>${event.player_in_id}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
             } else if (event.type === 'Cards') {
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;🟨🟥 Card: <strong>${event.player_name}</strong> received a card<br>&emsp;Description <strong>${event.description}</strong>`;
             } else {
                 eventElement.innerHTML = `Minute: <strong>${event.minute}</strong> <br>&emsp;Player: <strong>${event.player_name}</strong> <br>&emsp;Type: <strong>${event.type}</strong><br>&emsp;Description <strong>${event.description}</strong>`;
             }
-            teamColumn.appendChild(eventElement);
+            teamColumn.appendChild(eventElement); // Append event element to the team column
         }
     });
 
-    return teamColumn;
+    return teamColumn; // Return the completed team events column
 }
 
+// Async function to display formations for teams
 async function displayFormation(gameContainer, homeColumn, awayColumn) {
-    const homeTeamId = gameContainer.dataset.homeTeamId;
-    const awayTeamId = gameContainer.dataset.awayTeamId;
-    const gameID = gameContainer.dataset.gameId;
+    const homeTeamId = gameContainer.dataset.homeTeamId; // Get home team ID
+    const awayTeamId = gameContainer.dataset.awayTeamId; // Get away team ID
+    const gameID = gameContainer.dataset.gameId; // Get game ID
 
     try {
-        // Fetch formation for the home team
-        const homeFormation = document.createElement('div');
+        const homeFormation = document.createElement('div'); // Create a div for the home team's formation
         homeFormation.classList.add('formation');
 
         if (homeTeamId !== 'unknown') {
-            const response_home = await axios.get(`/server8091/api/game_lineups/game/${gameID}/${homeTeamId}`);
-            if (response_home.data && response_home.data.length > 0) {
-                response_home.data.forEach(player => {
-                    const playerInfo = document.createElement('p');
+            const responseHome = await axios.get(`/server8091/api/game_lineups/game/${gameID}/${homeTeamId}`); // Fetch home team lineup
+            if (responseHome.data && responseHome.data.length > 0) {
+                responseHome.data.forEach(player => {
+                    const playerInfo = document.createElement('p'); // Create an element for each player
                     playerInfo.innerHTML = `
                         Type: ${player.type} <br>
                         Number: ${player.number} <br>
@@ -846,25 +828,24 @@ async function displayFormation(gameContainer, homeColumn, awayColumn) {
                         Position: ${player.position}
                         ${player.team_captain === 1 ? '<br>Captain' : ''}
                     `;
-                    homeFormation.appendChild(playerInfo);
+                    homeFormation.appendChild(playerInfo); // Append player info to home formation
                 });
             } else {
-                homeFormation.textContent = 'No formation found';
+                homeFormation.textContent = 'No formation found'; // Message if no formation found
             }
         } else {
-            homeFormation.textContent = 'No formation found';
+            homeFormation.textContent = 'No formation found'; // Message if no formation found
         }
-        homeColumn.appendChild(homeFormation);
+        homeColumn.appendChild(homeFormation); // Append home formation to its column
 
-        // Fetch formation for the away team
-        const awayFormation = document.createElement('div');
+        const awayFormation = document.createElement('div'); // Create a div for away team's formation
         awayFormation.classList.add('formation');
 
         if (awayTeamId !== 'unknown') {
-            const response_away = await axios.get(`/server8091/api/game_lineups/game/${gameID}/${awayTeamId}`);
-            if (response_away.data && response_away.data.length > 0) {
-                response_away.data.forEach(player => {
-                    const playerInfo = document.createElement('p');
+            const responseAway = await axios.get(`/server8091/api/game_lineups/game/${gameID}/${awayTeamId}`); // Fetch away team lineup
+            if (responseAway.data && responseAway.data.length > 0) {
+                responseAway.data.forEach(player => {
+                    const playerInfo = document.createElement('p'); // Create an element for each player
                     playerInfo.innerHTML = `
                         Type: ${player.type} <br>
                         Number: ${player.number} <br>
@@ -872,106 +853,101 @@ async function displayFormation(gameContainer, homeColumn, awayColumn) {
                         Position: ${player.position}
                         ${player.team_captain === 1 ? '<br>Captain' : ''}
                     `;
-                    awayFormation.appendChild(playerInfo);
+                    awayFormation.appendChild(playerInfo); // Append player info to away formation
                 });
             } else {
-                awayFormation.textContent = 'No formation found';
+                awayFormation.textContent = 'No formation found'; // Message if no formation found
             }
         } else {
-            awayFormation.textContent = 'No formation found';
+            awayFormation.textContent = 'No formation found'; // Message if no formation found
         }
-        awayColumn.appendChild(awayFormation);
+        awayColumn.appendChild(awayFormation); // Append away formation to its column
 
     } catch (error) {
         console.error('Error fetching formation data:', error);
     }
 }
 
+// Function to show loading spinner
 function showLoadingSpinner() {
-    document.getElementById('loading-spinner').classList.remove('hidden');
+    const spinner = document.getElementById('loading-spinner'); // Get loading spinner element
+    if (spinner) spinner.classList.remove('hidden'); // Show spinner if it exists
 }
 
+// Function to hide loading spinner
 function hideLoadingSpinner() {
-    document.getElementById('loading-spinner').classList.add('hidden');
+    const spinner = document.getElementById('loading-spinner'); // Get loading spinner element
+    if (spinner) spinner.classList.add('hidden'); // Hide spinner if it exists
 }
 
-// Create a cache object to store fetched standings
-let standingsCache = {};
-
-function clearStandingsCache() {
-    standingsCache = {};
-}
-
+// Function to display standings for the selected competition
 async function displayStandings(competition_id) {
+    const standingPrompt = document.getElementById('standing-prompt'); // Get standings prompt
+    const standingsContainer = standingPrompt.querySelector('.standings-container'); // Get standings container
+    standingsContainer.style.display = 'none'; // Hide the standings container initially
+
+    if (currentCompetitionId !== competition_id) {
+        standingsCache = {}; // Clear the standings cache
+        currentCompetitionId = competition_id; // Update current competition ID
+    }
+
     try {
-        const cachedData = localStorage.getItem(`standings-${competition_id}`);
-        if (cachedData) {
-            console.log('Using cached standings data:', JSON.parse(cachedData));
-            renderStandings(JSON.parse(cachedData));
-            return; // Exit if we have cached data
+        if (standingsCache[competition_id]) { // Check if standings are already cached
+            console.log('Using session cache for standings');
+            renderStandings(standingsCache[competition_id]); // Render standings from cache
+            standingsContainer.style.display = 'block'; // Show standings container
+            return;
         }
 
-        showLoadingSpinner(); // Show loading spinner
-        const response = await axios.get(`/api/games/standings/${competition_id}`);
-        hideLoadingSpinner(); // Hide loading spinner
+        // Fetch the standings from API
+        const response = await axios.get(`/server8091/api/games/standings/${competition_id}`);
 
-        renderStandings(response.data);
+        standingsCache[competition_id] = response.data; // Cache the fetched standings data
+        renderStandings(response.data); // Render the fetched standings data
+        standingsContainer.style.display = 'block'; // Show standings container
+
     } catch (error) {
-        hideLoadingSpinner(); // Ensure spinner is hidden
-        console.error('Error fetching standings:', error);
-
-        // Display an error message
-        const standingPrompt = document.getElementById('standing-prompt');
-        const standingsContainer = standingPrompt.querySelector('.standings-container');
-        standingsContainer.textContent = 'No standings found for this competition.';
+        hideLoadingSpinner(); // Hide spinner on error
+        console.error('Error fetching standings:', error); // Log error
+        standingsContainer.innerHTML = '<p>No standings found for this competition.</p>'; // Show no standings found message
     }
 }
 
-// Function to render standings
+// Function to render standings in the UI
 function renderStandings(standingsData) {
-    const standingPrompt = document.getElementById('standing-prompt'); // Get the standing prompt container
-    const standingsContainer = standingPrompt.querySelector('.standings-container'); // Get the standings container
-
-    standingsContainer.innerHTML = ''; // Clear existing standings if any
+    const standingsContainer = document.querySelector('.standings-container'); // Get standings container
+    standingsContainer.innerHTML = '';  // Clear previous standings
 
     standingsData.forEach(round => {
-        // Create a div for each round
-        const roundDiv = document.createElement('div');
-        roundDiv.classList.add('round-container');
+        const roundDiv = document.createElement('div'); // Create round container
+        roundDiv.classList.add('round-container'); // Add class for styling
 
-        // Create a header for the round
-        const roundHeader = document.createElement('div');
+        const roundHeader = document.createElement('div'); // Create round header
         roundHeader.classList.add('round-header');
         roundHeader.innerHTML = `
-            <span>${round.round}</span> <!-- Correctly reference round.round -->
-            <span class="right-arrow">&#11208;</span>
-        `;
+            <span>${round.round}</span>
+            <span class="right-arrow">&#11208;</span>`;
 
-        // Create a div to hold the teams for this round
-        const teamsDiv = document.createElement('div');
+        const teamsDiv = document.createElement('div'); // Create teams container
         teamsDiv.classList.add('teams-container');
-        teamsDiv.style.display = 'none'; // Initially hide the teams
+        teamsDiv.style.display = 'none'; // Initially hide teams
 
-        // Create a list of teams for this round
         round.teams.forEach(team => {
-            const teamDiv = document.createElement('div');
-            teamDiv.classList.add('team-item'); // Add a class for individual teams
-            teamDiv.textContent = `${team.position}° ${team.name}`; // Display name and position
-            teamsDiv.appendChild(teamDiv); // Add the team div to the teams container
+            const teamDiv = document.createElement('div'); // Create element for each team
+            teamDiv.classList.add('team-item');
+            teamDiv.textContent = team.position ? `${team.position}° ${team.name}` : team.name; // Set team text
+            teamsDiv.appendChild(teamDiv); // Append team to teams container
         });
 
-        // Append the header and teams container to the round div
-        roundDiv.appendChild(roundHeader);
-        roundDiv.appendChild(teamsDiv);
-        standingsContainer.appendChild(roundDiv); // Add round div to the standings container
+        roundDiv.appendChild(roundHeader); // Append header to round
+        roundDiv.appendChild(teamsDiv); // Append teams to round
+        standingsContainer.appendChild(roundDiv); // Append round to standings container
 
-        // Add click event to toggle teams visibility
+        // Toggle team visibility on header click
         roundHeader.addEventListener('click', () => {
-            teamsDiv.style.display = teamsDiv.style.display === 'none' ? 'block' : 'none';
-            // Change the arrow direction based on teams visibility
-            const arrow = roundHeader.querySelector('.right-arrow');
-            arrow.innerHTML = teamsDiv.style.display === 'none' ? '&#11208;' : '&#11205;'; // Down or Up arrow
+            const isVisible = teamsDiv.style.display === 'block'; // Check if teams are visible
+            teamsDiv.style.display = isVisible ? 'none' : 'block'; // Toggle visibility
+            roundHeader.querySelector('.right-arrow').innerHTML = isVisible ? '&#11208;' : '&#11205;'; // Toggle arrow direction
         });
     });
 }
-
