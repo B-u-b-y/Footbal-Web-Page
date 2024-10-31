@@ -1,0 +1,145 @@
+/* Apply flexbox to the body to make it fill the viewport */
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* Set the minimum height to the viewport height */
+    font-family: "Poppins", sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+}
+
+/* Container takes up all available space between header and footer */
+.container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* Makes it expand to fill the space between header and footer */
+    width: 90%;
+    margin: 0 auto;
+}
+
+/* Footer stays at the bottom */
+footer {
+    text-align: center;
+    padding: 10px 0;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 10px;
+    margin-top: 20px;
+}
+
+/* Other styles remain unchanged */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+header {
+    text-align: center;
+    padding: 20px 0;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 10px;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 10px;
+}
+
+.welcome-message {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 1.2em;
+    color: #333;
+    background-color: white;
+    border-radius: 10px;
+    padding: 20px;
+}
+
+.plots {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+    max-width: 100%;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    text-align: center;
+    overflow: hidden;
+}
+
+.chart-container h2 {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.chart-container p {
+    font-size: 1em;
+    margin-bottom: 15px;
+    color: #555;
+    text-align: left;
+    padding-left: 10px;
+}
+
+.chart img {
+    width: 500px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.loading-message {
+    font-size: 1.5em;
+    color: #666;
+}
+
+/* Spinner overlay to center on the page */
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center; /* Center vertically */
+    justify-content: center; /* Center horizontally */
+    z-index: 1000; /* Ensure it appears above other elements */
+}
+
+/* Spinner styles */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: #4CAF50; /* Color of the spinner */
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+/* Keyframes for spinner animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@media (max-width: 768px) {
+    .chart img {
+        width: 80%;
+        max-width: 100%;
+    }
+
+    .chart-container {
+        margin-bottom: 20px;
+    }
+}

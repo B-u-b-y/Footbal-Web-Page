@@ -107,6 +107,20 @@ function initializeSelects() {
         // Fetch competitions based on the selected country
         if (selectedCountry) {
             await fetchCompetitions(selectedCountry);
+        }else{
+            const cardContainer = document.getElementById('card-container'); // Get the container for cards
+            cardContainer.innerHTML = ''; // Clear existing cards
+            //reset the initial layout
+            const startingContainer = document.querySelector('.center-content');
+            startingContainer.style.display = 'block'; // Show the news container
+            startingContainer.style.caretColor = 'transparent';
+            startingContainer.style.display = 'flex';
+            startingContainer.style.flexDirection = 'column';
+            startingContainer.style.justifyContent = 'center';
+            startingContainer.style.alignItems = 'center';
+            startingContainer.style.height = '70vh';
+            startingContainer.style.textAlign = 'center';
+            startingContainer.style.padding = '20px';
         }
     });
 
@@ -179,6 +193,10 @@ function initializeSelects() {
         // Fetch clubs for the selected competition
         if (selectedCompetition) {
             await fetchClubs(selectedCompetition);
+        }else{
+            const cardContainer = document.getElementById('card-container'); // Get the container for cards
+            cardContainer.innerHTML = ''; // Clear existing cards
+            standingPrompt.style.display = 'none'; // Hide the standing prompt
         }
     });
 
@@ -226,6 +244,11 @@ function initializeSelects() {
         // Fetch players for the selected club
         if (selectedClub) {
             await fetchPlayers(selectedClub); // Fetch players
+        }else{
+            const cardContainer = document.getElementById('card-container'); // Get the container for cards
+            cardContainer.innerHTML = ''; // Clear existing cards
+            const clubInfoContainer = document.getElementById('club-info-container'); // Get the club info container
+            clubInfoContainer.style.display = 'none'; // Hide club info container
         }
     });
 
@@ -259,6 +282,9 @@ function initializeSelects() {
         // Fetch and display the selected player as a card
         if (selectedPlayer) {
             await fetchPlayer(selectedPlayer); // Fetch player details
+        }else{
+            const cardContainer = document.getElementById('card-container'); // Get the container for cards
+            cardContainer.innerHTML = ''; // Clear existing cards
         }
     });
 
