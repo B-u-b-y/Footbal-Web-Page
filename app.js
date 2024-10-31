@@ -7,6 +7,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var SpringRouter = require('./routes/server8090');
 var ExpressRouter = require('./routes/server8091');
+var FlaskRouter = require('./routes/server8092');
 
 var app = express();
 
@@ -25,5 +26,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/server8090', SpringRouter);
 app.use('/server8091', ExpressRouter);
+app.use('/server8092', FlaskRouter);
 
 module.exports = app;
