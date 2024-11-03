@@ -3,82 +3,66 @@ let room;
 
 function init() {
     const username = sessionStorage.getItem('username');
-    const room_submit = document.querySelector('#connect-btn');
-    const form_submit = document.querySelector('.wrapper');
-    const chat_space = document.querySelector('.chat-space');
-    const leave_room = document.querySelector('#leave-btn');
-    const send_button = document.querySelector('#send-btn');
-    const room_input = document.querySelector('#room');
-    const message_input = document.querySelector('#message-input'); // Get the message input field
-    const chat_messages = document.querySelector('#chat-messages'); // Reference to the chat messages container
-    const message_list = document.querySelector('#message');
+    const roomSelect = document.querySelector('#room');
+    const roomSubmit = document.querySelector('#connect-btn');
+    const formSubmit = document.querySelector('.wrapper');
+    const chatSpace = document.querySelector('.chat-space');
+    const leaveRoom = document.querySelector('#leave-btn');
+    const sendButton = document.querySelector('#send-btn');
+    const messageInput = document.querySelector('#message-input');
+    const chatMessages = document.querySelector('#chat-messages');
+    const messageList = document.querySelector('#message');
+    const chatHeader = document.querySelector('.chat-header h2'); // Select the h2 element in chat header
 
     // Event listener for the "Enter" button
-    room_submit.addEventListener('click', () => {
-        room = room_input.value; // Get the value of the room input field
-        if (room.trim() === "") {
-            room_input.placeholder = 'Enter a room name'; // Fixed the reference to room_input
-            room_input.style.color = 'red';
+    roomSubmit.addEventListener('click', () => {
+        room = roomSelect.value;
+        if (room === "Select room" || room.trim() === "") {
+            roomSelect.style.borderColor = 'red';
+            roomSelect.focus();
             return;
         }
 
-        form_submit.style.display = 'none'; // Hide the form
-        chat_space.style.display = 'block'; // Show the chat space
+        // Hide the form and display the chat space
+        formSubmit.style.display = 'none';
+        chatSpace.style.display = 'block';
 
-        // Emit the join event with the room and username
+        // Update the chat header with the room name
+        chatHeader.textContent = `Chat - ${roomSelect.options[roomSelect.selectedIndex].text}`;
+
+        // Emit join event with room and username
         socket.emit('join', { room, username });
     });
 
-    // Event listener for the "Send" button
-    send_button.addEventListener('click', () => {
-        const message = message_input.value; // Get the message from the input
-        if (message.trim() === "") {
-            return; // Prevent sending empty messages
-        }
+    // Event listener for "Send" button
+    sendButton.addEventListener('click', () => sendMessage());
 
-        // Emit the message to the server
+    // Handle sending message with "Enter" key
+    messageInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') sendMessage();
+    });
+
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (!message) return;
+
         socket.emit('message', { room, message });
-        message_input.value = ""; // Clear the input field after sending
-    });
-
-    message_input.addEventListener('keypress', (event) => {
-        if (event.key === 'Enter') {
-            const message = message_input.value; // Get the message from the input
-            if (message.trim() === "") {
-                return; // Prevent sending empty messages
-            }
-
-            // Emit the message to the server
-            socket.emit('message', { room, message });
-            message_input.value = ""; // Clear the input field after sending
-        }
-    });
+        messageInput.value = "";
+    }
 
     // Event listener for the "Leave" button
-    leave_room.addEventListener('click', () => {
+    leaveRoom.addEventListener('click', () => {
         socket.emit('leave', { room });
-        sessionStorage.setItem('username', username); // Store username in session storage
-        window.location.href = '/'; // Redirect to the main page after leaving
+        sessionStorage.setItem('username', username);
+        window.location.href = '/';
     });
 
-    // Listen for messages from the server
+    // Listen for incoming messages from server
     socket.on('message', (data) => {
-        const messageElement = document.createElement('li'); // Create a <li> element for each message
-
-        if (data.username === 'System') {
-            messageElement.classList.add('system-message'); // Add a class for system messages
-            messageElement.innerHTML = `${data.message}`; // Display system messages as they are
-        } else if (data.username === username) {
-            messageElement.classList.add('my-message'); // Add a class for the user's message
-            messageElement.innerHTML = `<span class="you">You</span>:<br> ${data.message}`; // Prefix "You:" with a span
-        } else {
-            messageElement.classList.add('other-message'); // Add a class for other users' messages
-            messageElement.innerHTML = `<span class="username">${data.username}</span>:<br> ${data.message}`; // Wrap username in a span
-        }
-
-        message_list.appendChild(messageElement); // Append the new message to the <ul>
-        chat_messages.scrollTop = chat_messages.scrollHeight; // Scroll to the bottom of the chat
-
-        message_input.focus();
+        const messageElement = document.createElement('li');
+        messageElement.classList.add(data.username === 'System' ? 'system-message' : (data.username === username ? 'my-message' : 'other-message'));
+        messageElement.innerHTML = data.username === username ? `<span>You</span>:<br> ${data.message}` : `<span class="username">${data.username}</span>:<br> ${data.message}`;
+        messageList.appendChild(messageElement);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     });
 }

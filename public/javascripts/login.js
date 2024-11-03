@@ -55,6 +55,9 @@ document.addEventListener('DOMContentLoaded', function () {
     registerLink.addEventListener('click', function(event) {
         event.preventDefault(); // Prevent default behavior of the link
 
+        document.querySelector('input[name="username"]').value = '';
+        document.querySelector('input[name="password"]').value = '';
+
         // Hide the register-link div
         registerLinkDiv.style.display = 'none';
 

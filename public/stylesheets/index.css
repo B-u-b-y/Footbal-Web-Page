@@ -296,46 +296,6 @@ select {
   color: #555;
 }
 
-.carousel-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  background-image: url("../images/newsl3.jpg");
-  background-size: cover;
-  background-position: center;
-  padding: 15px;
-  border-radius: 8px;
-  height: 600px;
-  width: 70%;
-  margin: 15px auto;
-  position: relative;
-  font-family: "Poppins", sans-serif;
-}
-
-.carousel-item {
-  border-radius: 8px;
-  background: linear-gradient(#A6C97E, #92BD61);
-  position: absolute;
-  width: 70%;
-  bottom: 15px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  padding: 15px 10px;
-  color: black;
-}
-
-.news-container {
-  padding: 15px;
-  border-radius: 8px;
-  text-align: center;
-}
-
-.news-item h2 {
-  margin-bottom: 6px;
-}
-
 #club-info-container {
   display: flex;
   justify-content: center;
@@ -887,4 +847,23 @@ select {
 
 .team-item {
   margin: 5px 0;
+}
+
+#user-name {
+  position: relative;
+  display: inline-block;
+  cursor: pointer; /* Show pointer on hover */
+  transition: color 0.3s ease; /* Smooth color transition */
+}
+
+#user-name:hover {
+  color: black; /* Change color on hover for effect */
+}
+
+span {
+  transition: transform 0.2s ease; /* Smooth transform for hover effect */
+}
+
+span:hover {
+  transform: scale(1.05); /* Slightly scale up on hover */
 }

@@ -10,35 +10,37 @@
     <script src="/javascripts/chat.js"></script>
 </head>
 <body onload="init()">
-    <div class="wrapper">
-            <h2>Chat Room</h2>
-
-            <div class="rooms">
-                <input id="room" type="text" placeholder="Room" required>
-            </div>
-
-            <button type="submit" class="btn" id="connect-btn">Enter</button>
+<div class="wrapper">
+    <h2>Chat Room</h2>
+    <div class="rooms">
+        <label for="room">Select a room:</label>
+        <select name="room" id="room">
+            <option>Select room</option>
+            <option value="juventus-FC">Juventus FC</option>
+            <option value="super-coppa">Super Coppa Italiana</option>
+            <option value="europa">Europa</option>
+            <option value="liga-portugal-bwin">Liga Portugal Bwin</option>
+        </select>
     </div>
+    <button type="submit" class="btn" id="connect-btn">Enter</button>
+</div>
 
-    <div class="chat-space" style="display: none">
-        <div class="chat-header">
-            <h2>Chat</h2>
-            <button class="btn" id="leave-btn">Leave</button>
+<div class="chat-space" style="display: none">
+    <div class="chat-header">
+        <h2>Chat</h2>
+        <button class="btn" id="leave-btn">Leave</button>
+    </div>
+    <div class="chat-container">
+        <div class="chat-messages" id="chat-messages">
+            <ul id="message"></ul>
         </div>
-
-        <div class="chat-container">
-            <div class="chat-messages" id="chat-messages">
-                <ul id="message"></ul>
-            </div>
-
-            <div class="chat-input">
-                <input type="text" id="message-input" placeholder="Type your message...">
-                <button class="btn send-btn" id="send-btn">
-                    <i class="fas fa-paper-plane"></i>
-                </button>
-            </div>
+        <div class="chat-input">
+            <input type="text" id="message-input" placeholder="Type your message...">
+            <button class="btn send-btn" id="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
-
+</div>
 </body>
 </html>

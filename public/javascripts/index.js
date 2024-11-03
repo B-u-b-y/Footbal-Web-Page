@@ -22,6 +22,61 @@ function checkLoginStatus() {
         if (login) login.style.display = 'none'; // Hide login link
         userNameDisplay.textContent = username; // Display the username
         userNameDisplay.style.display = 'inline'; // Show username in UI
+        const button_container = document.querySelector('.btn-container');
+        button_container.style.display = 'none';
+
+        // Add hover effect to display "Logout"
+        userNameDisplay.style.position = 'relative';
+        const logoutText = document.createElement('span');
+        logoutText.style.fontFamily = 'Poppins';
+        logoutText.style.fontSize = '14px';
+        logoutText.textContent = 'Logout';
+        logoutText.style.position = 'absolute';
+        logoutText.style.top = '100%'; // Position below the username
+        logoutText.style.left = '0';
+        logoutText.style.opacity = '0'; // Start hidden for fade effect
+        logoutText.style.transition = 'opacity 0.3s ease'; // Add fade transition
+        logoutText.style.pointerEvents = 'none'; // Prevent interaction when hidden
+        logoutText.style.backgroundColor = '#fff'; // White background
+        logoutText.style.padding = '5px 10px';
+        logoutText.style.border = '1px solid #ddd';
+        logoutText.style.borderRadius = '5px';
+        logoutText.style.zIndex = '10'; // Ensure it's above other elements
+        userNameDisplay.appendChild(logoutText);
+
+        userNameDisplay.addEventListener('mouseover', () => {
+            userNameDisplay.style.textDecoration = 'underline';
+        });
+
+        // Show "Logout" on click
+        userNameDisplay.addEventListener('click', () => {
+            logoutText.style.fontWeight = 'bold';
+            logoutText.style.opacity = '1'; // Fade in
+            logoutText.style.pointerEvents = 'auto'; // Allow interaction when visible
+        });
+
+        // Variable to hold the timeout ID
+        let timeoutId;
+
+        userNameDisplay.addEventListener('mouseleave', () => {
+            // Clear any existing timeout to avoid stacking delays
+            clearTimeout(timeoutId);
+            // Set a timeout to hide the logout text after 1 second (1000 milliseconds)
+            timeoutId = setTimeout(() => {
+                logoutText.style.opacity = '0'; // Fade out
+                logoutText.style.pointerEvents = 'none'; // Prevent interaction when hidden
+            }, 1000);
+            userNameDisplay.style.textDecoration = 'none';
+        });
+
+        // Add click event listener for logout
+        logoutText.addEventListener('click', () => {
+            sessionStorage.removeItem('username'); // Clear username from session storage
+            window.location.reload(); // Reload the page
+            chatLink.style.display = 'none'; // Hide chat link
+            login.style.display = 'inline-block'; // Show login link
+            userNameDisplay.style.display = 'none'; // Hide username display
+        });
     }
 }
 

@@ -7,6 +7,7 @@
 }
 
 body{
+    caret-color: transparent;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -14,10 +15,7 @@ body{
     height: 100%;
     padding: 0;
     margin: 0;
-    background-image: url("../images/7979.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-color: #C1F5CD;
 }
 
 .wrapper{
@@ -52,6 +50,10 @@ body{
     font-size: 18px;
     color: white;
     padding: 20px 45px 20px 20px;
+}
+
+.input-group input:focus{
+    caret-color: white;
 }
 
 .input-group input::placeholder{
