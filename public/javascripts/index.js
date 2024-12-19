@@ -431,6 +431,12 @@ function displayCompetitionsAsCards(competitions) {
             <p>${competition.country_name}</p>
         `;
 
+        card.addEventListener('click', async function() {
+            const competitionSelect = document.getElementById('competition-select'); // Select element for competitions
+            competitionSelect.innerHTML = `<option value="${competition.competition_id}">${competition.name}</option>`; // Set selected competition
+            competitionSelect.dispatchEvent(new Event('change')); // Trigger change event
+        });
+
         cardContainer.appendChild(card); // Append the card to the container
     });
 
@@ -459,6 +465,12 @@ function displayClubsAsCards(clubs) {
             <p>Net Transfer Value: ${club.net_transfer_value}</p>
             <p>Last season: ${club.last_season}</p>
         `;
+
+        card.addEventListener('click', async function() {
+            const clubSelect = document.getElementById('club-select'); // Select element for clubs
+            clubSelect.innerHTML = `<option value="${club.club_id}">${club.name}</option>`; // Set selected club
+            clubSelect.dispatchEvent(new Event('change')); // Trigger change event
+        });
 
         cardContainer.appendChild(card); // Append the card to the container
     });
@@ -490,6 +502,12 @@ function displayPlayersAsCards(players) {
                 <p>Date of birth: ${player.date_of_birth}</p>
             </div>
         `;
+
+        card.addEventListener('click', async function() {
+            const playerSelect = document.getElementById('player-select'); // Select element for players
+            playerSelect.innerHTML = `<option value="${player.player_id}">${player.name}</option>`; // Set selected player
+            playerSelect.dispatchEvent(new Event('change')); // Trigger change event
+        });
 
         cardContainer.appendChild(card); // Append the card to the container
     });
@@ -682,6 +700,7 @@ function displayOptions(selectElement, options, valueKey, textKey) {
     defaultOption.textContent = `Select ${selectElement.id.replace('-select', '')}`; // Set default option text
     selectElement.appendChild(defaultOption); // Append default option to select
 
+    console.log('options', options);
     // Populate select with provided options
     options.forEach(option => {
         const optionElement = document.createElement('option'); // Create option element
@@ -842,7 +861,7 @@ async function displaySelectedGameDetails(gameContainer, homeTeam, awayTeam) {
 
         document.body.appendChild(detailsContainer); // Append details to body
 
-        await displayFormation(gameContainer, homeColumn, awayColumn); // Display formations for teams
+        await displayInfoGame(gameContainer, homeColumn, awayColumn); // Display formations for teams
 
         hideLoadingSpinner(); // Hide loading spinner
     } catch (error) {
@@ -888,7 +907,7 @@ function createTeamEventsColumn(gameEvents, teamName) {
 }
 
 // Async function to display formations for teams
-async function displayFormation(gameContainer, homeColumn, awayColumn) {
+async function displayInfoGame(gameContainer, homeColumn, awayColumn) {
     const homeTeamId = gameContainer.dataset.homeTeamId; // Get home team ID
     const awayTeamId = gameContainer.dataset.awayTeamId; // Get away team ID
     const gameID = gameContainer.dataset.gameId; // Get game ID
@@ -999,6 +1018,10 @@ function renderStandings(standingsData) {
     const standingsContainer = document.querySelector('.standings-container'); // Get standings container
     standingsContainer.innerHTML = '';  // Clear previous standings
 
+    if(standingsData.length === 0) {
+        standingsContainer.innerHTML = '<p>No standings found for this competition.</p>'; // Show no standings found message
+        return;
+    }
     standingsData.forEach(round => {
         const roundDiv = document.createElement('div'); // Create round container
         roundDiv.classList.add('round-container'); // Add class for styling
