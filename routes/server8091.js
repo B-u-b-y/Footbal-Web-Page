@@ -256,7 +256,6 @@ router.get('/api/club_games/club/games/:club_id', async (req, res) => {
         if(response.data) {
             res.send(response.data);
         }
-        console.log('/api/club_games/club/games/:club_id', response, response.data);
     }catch (error){
         res.send(error);
     }
