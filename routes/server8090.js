@@ -87,7 +87,7 @@ router.get('/:country_name/competitions', async (req, res) => {
 *         - Competitions
 *       responses:
 *         '200':
-*           description: A list of countries participating in competitions.
+*           description: List of countries
 *           content:
 *             application/json:
 *               schema:
@@ -147,7 +147,7 @@ router.get('/competitions/country', async (req, res) => {
 *                     description: Unique identifier for the club
 *                   club_code:
 *                     type: string
-*                     description: Code for the club (e.g., "as-rom" for Roma)
+*                     description: Code for the club
 *                   name:
 *                     type: string
 *                     description: Name of the club
@@ -183,8 +183,6 @@ router.get('/competitions/country', async (req, res) => {
 *                     type: number
 *                     format: float
 *                     description: Percentage of foreign players in the club
-*       400:
-*         description: Invalid competition code provided
 *       500:
 *         description: Internal server error occurred during the request
 * */
@@ -231,7 +229,7 @@ router.get('/:competition/clubs', async (req, res) => {
 *                   description: Full name of the club.
 *                 domestic_competition_id:
 *                   type: string
-*                   description: The ID of the domestic competition the club participates in (e.g., 'IT1' for Serie A).
+*                   description: The ID of the domestic competition the club participates in.
 *                 squad_size:
 *                   type: integer
 *                   description: The total number of players in the club's squad.
@@ -252,7 +250,7 @@ router.get('/:competition/clubs', async (req, res) => {
 *                   description: The seating capacity of the stadium.
 *                 net_transfer_record:
 *                   type: string
-*                   description: The club's net transfer balance, indicating how much they have spent or earned in player transfers (e.g., '+€5.56m').
+*                   description: The club's net transfer balance, indicating how much they have spent or earned in player transfers.
 *                 last_season:
 *                   type: integer
 *                   description: The year of the club's most recent season.
@@ -334,26 +332,26 @@ router.get('/clubs/:club_id', async (req, res) => {
 *                     description: The date of birth of the player.
 *                   sub_position:
 *                     type: string
-*                     description: The specific sub-position the player plays in (e.g., centre-forward).
+*                     description: The specific sub-position the player plays in.
 *                   position:
 *                     type: string
-*                     description: The main position of the player (e.g., Attack).
+*                     description: The main position of the player.
 *                   foot:
 *                     type: string
-*                     description: The dominant foot of the player (e.g., left or right).
+*                     description: The dominant foot of the player.
 *                   height_in_cm:
 *                     type: integer
 *                     description: The height of the player in centimeters.
 *                   market_value_in_eur:
 *                     type: string
-*                     description: The current market value of the player in Euros (e.g., '1.50M').
+*                     description: The current market value of the player in Euros.
 *                   highest_market_value_in_eur:
 *                     type: string
 *                     description: The highest market value the player has ever had in Euros.
 *                   contract_expiration_date:
 *                     type: string
 *                     format: date
-*                     description: The expiration date of the player's contract (if applicable).
+*                     description: The expiration date of the player's contract.
 *                   agent_name:
 *                     type: string
 *                     description: The name of the player's agent.
@@ -362,10 +360,10 @@ router.get('/clubs/:club_id', async (req, res) => {
 *                     description: URL to the player's image or portrait.
 *                   url:
 *                     type: string
-*                     description: The URL to the player's profile on the external platform (e.g., Transfermarkt).
+*                     description: The URL to the player's profile on the external platform.
 *                   current_club_domestic_competition_id:
 *                     type: string
-*                     description: The ID of the domestic competition the player's current club is in (e.g., 'IT1' for Serie A).
+*                     description: The ID of the domestic competition the player's current club is in.
 *                   current_club_name:
 *                     type: string
 *                     description: The name of the player's current club.
