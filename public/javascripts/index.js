@@ -700,7 +700,6 @@ function displayOptions(selectElement, options, valueKey, textKey) {
     defaultOption.textContent = `Select ${selectElement.id.replace('-select', '')}`; // Set default option text
     selectElement.appendChild(defaultOption); // Append default option to select
 
-    console.log('options', options);
     // Populate select with provided options
     options.forEach(option => {
         const optionElement = document.createElement('option'); // Create option element
