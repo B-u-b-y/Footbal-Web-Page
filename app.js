@@ -8,7 +8,11 @@ var SpringRouter = require('./routes/server8090');
 var ExpressRouter = require('./routes/server8091');
 var FlaskRouter = require('./routes/server8092');
 
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swaggerConf');
+
 var app = express();
+
 
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -25,5 +29,7 @@ app.use('/users', usersRouter);
 app.use('/server8090', SpringRouter);
 app.use('/server8091', ExpressRouter);
 app.use('/server8092', FlaskRouter);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 module.exports = app;
