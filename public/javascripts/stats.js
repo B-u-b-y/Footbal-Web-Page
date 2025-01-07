@@ -76,7 +76,7 @@ async function fetchWorldMap() {
                 "&nbsp;&nbsp;- Darker shades indicate a higher total, while light grey denotes countries with no recorded guest goals.<br>" +
                 "This visualization reveals the global spread of guest goals, highlighting countries with more active gameplay.<br>" +
                 "&nbsp;&nbsp;- Italy stands out as having the highest guest goal activity, and Europe emerges as the most active continent in this respect.<br>" +
-                "The only higlighted countries are: " + countries_with_games.join(', ') + "that means that the rest of the countries have no recorded games."
+                "The only higlighted countries are: " + countries_with_games.join(', ') + " that means that the rest of the countries have no recorded games."
                 );
             chartContainer.appendChild(img); // Add the new image to the container
             loadingMessage.remove(); // Remove loading message
